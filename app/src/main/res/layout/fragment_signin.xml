@@ -17,9 +17,9 @@
         android:id="@+id/editTextSignInPassword"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:autofillHints=""
         android:hint="@string/password"
-        android:inputType="textPassword" />
+        android:inputType="textPassword"
+        android:autofillHints="" />
 
     <Button
         android:id="@+id/buttonSignInSubmit"
