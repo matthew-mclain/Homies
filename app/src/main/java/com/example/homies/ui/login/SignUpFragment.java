@@ -4,10 +4,14 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+
 import com.example.homies.R;
 
-public class SignUpFragment extends Fragment {
+public class SignUpFragment extends Fragment implements View.OnClickListener {
 
     public SignUpFragment() {
     }
@@ -17,7 +21,25 @@ public class SignUpFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_signup, container, false);
 
+        Button backButton = view.findViewById(R.id.buttonBack);
+        backButton.setOnClickListener(this);
+
         return view;
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.buttonBack) {
+            // Navigate back to the previous fragment (or activity in this case)
+            FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+            fragmentManager.popBackStack();
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        ((LoginActivity) requireActivity()).showButtons();
+        super.onDestroyView();
     }
 }
 
