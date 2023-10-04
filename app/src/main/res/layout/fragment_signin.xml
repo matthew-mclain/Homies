@@ -11,7 +11,7 @@
         android:layout_height="50dp"
         android:hint="@string/username"
         android:inputType="text"
-        android:autofillHints="" />
+        android:autofillHints="username" />
 
     <EditText
         android:id="@+id/editTextSignInPassword"
@@ -19,7 +19,7 @@
         android:layout_height="50dp"
         android:hint="@string/password"
         android:inputType="textPassword"
-        android:autofillHints="" />
+        android:autofillHints="password" />
 
     <Button
         android:id="@+id/buttonSignInSubmit"
