@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.homies.MainActivity;
 import com.example.homies.R;
@@ -55,7 +57,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void showSignUpFragment() {
         hideButtons();
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, new SignUpFragment())
+                .replace(R.id.fragment_container, new SignUpFragment(this))
                 .addToBackStack(null)
                 .commit();
     }
@@ -64,7 +66,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void showSignInFragment() {
         hideButtons();
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, new SignInFragment())
+                .replace(R.id.fragment_container, new SignInFragment(this))
                 .addToBackStack(null)
                 .commit();
     }
@@ -78,7 +80,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     // Method to show the buttons
-    public void showButtons() {
+    public void showButtons(View viewToRemove) {
+        LinearLayout fragmentContainer = findViewById(R.id.fragment_container);
+        fragmentContainer.removeView(viewToRemove);
         Button signInButton = findViewById(R.id.buttonSignIn);
         Button signUpButton = findViewById(R.id.buttonSignUp);
         signInButton.setVisibility(View.VISIBLE);
