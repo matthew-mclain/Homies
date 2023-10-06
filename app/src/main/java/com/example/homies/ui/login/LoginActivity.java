@@ -10,10 +10,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.homies.MainActivity;
 import com.example.homies.R;
 
+import timber.log.Timber;
+
+
+
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
+    private final String TAG = getClass().getSimpleName();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Timber.tag(TAG).d("onCreate()");
         setContentView(R.layout.activity_login);
 
         // Check if the user is already logged in, if so, navigate to MainActivity

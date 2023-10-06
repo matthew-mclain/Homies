@@ -11,6 +11,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.example.homies.R;
+import timber.log.Timber;
+
 
 public class SignInFragment extends Fragment implements View.OnClickListener{
 
@@ -18,6 +20,7 @@ public class SignInFragment extends Fragment implements View.OnClickListener{
     EditText passwordET;
     LoginActivity loginActivity;
     View view;
+    private final String TAG = getClass().getSimpleName();
 
     public SignInFragment(LoginActivity loginActivity) {
         this.loginActivity = loginActivity;
@@ -28,6 +31,8 @@ public class SignInFragment extends Fragment implements View.OnClickListener{
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_signin, container, false);
+        Timber.tag(TAG).d("onCreateView()");
+
 
         usernameET = view.findViewById((R.id.editTextSignInUsername));
         passwordET = view.findViewById(R.id.editTextSignInPassword);
@@ -46,7 +51,20 @@ public class SignInFragment extends Fragment implements View.OnClickListener{
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Timber.tag(TAG).d("onDestroyView()");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Timber.tag(TAG).d("onDestroy()");
+    }
+    @Override
     public void onClick(View view){
+        Timber.tag(TAG).d("onClick()");
+
         if (view.getId() == R.id.buttonSignInSubmit){
             String username = usernameET.getText().toString();
             String password = passwordET.getText().toString();
@@ -69,6 +87,12 @@ public class SignInFragment extends Fragment implements View.OnClickListener{
             loginActivity.showButtons(this.view);
         }
 
+    }
+
+    @Override
+    public void onPause() {
+        Timber.tag(TAG).d("onPause()");
+        super.onPause();
     }
 }
 

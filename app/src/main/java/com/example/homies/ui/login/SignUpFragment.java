@@ -2,6 +2,7 @@ package com.example.homies.ui.login;
 
 import static android.content.DialogInterface.BUTTON_POSITIVE;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -13,8 +14,11 @@ import android.widget.EditText;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.LifecycleOwner;
 
 import com.example.homies.R;
+
+import timber.log.Timber;
 
 public class SignUpFragment extends Fragment implements View.OnClickListener, DialogInterface.OnClickListener{
 
@@ -23,6 +27,8 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
     EditText passwordConfirmET;
     LoginActivity loginActivity;
     View view;
+    private final String TAG = getClass().getSimpleName();
+
 
     public SignUpFragment(LoginActivity loginActivity) {
         this.loginActivity = loginActivity;
@@ -32,6 +38,8 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_signup, container, false);
+        Timber.tag(TAG).d("onCreateView()");
+
 
         usernameET = view.findViewById((R.id.editTextSignInUsername));
         passwordET = view.findViewById(R.id.editTextSignInPassword);
@@ -50,9 +58,22 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
 
         return view;
     }
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Timber.tag(TAG).d("onDestroyView()");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Timber.tag(TAG).d("onDestroy()");
+    }
 
     @Override
     public void onClick(View view){
+        Timber.tag(TAG).d("onClick()");
+
         if (view.getId() == R.id.buttonSignUpSubmit){
             String username = usernameET.getText().toString();
             String password = passwordET.getText().toString();
@@ -95,6 +116,12 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
         if (which == BUTTON_POSITIVE){
             loginActivity.showSignInFragment();
         }
+    }
+
+    @Override
+    public void onPause() {
+        Timber.tag(TAG).d("onPause()");
+        super.onPause();
     }
 }
 
