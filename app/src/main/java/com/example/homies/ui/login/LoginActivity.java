@@ -30,6 +30,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onClick(View v) {
+        Button signInButton = findViewById(R.id.buttonSignIn);
+        Button signUpButton = findViewById(R.id.buttonSignUp);
+
+        signInButton.setVisibility(View.GONE);
+        signUpButton.setVisibility(View.GONE);
+
         if (v.getId() == R.id.buttonSignIn) {
             showSignInFragment();
         } else if (v.getId() == R.id.buttonSignUp) {
@@ -47,6 +53,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     // Method to switch to SignUpFragment
     public void showSignUpFragment() {
+        hideButtons();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, new SignUpFragment())
                 .addToBackStack(null)
@@ -55,10 +62,27 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     // Method to switch to SignInFragment
     public void showSignInFragment() {
+        hideButtons();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, new SignInFragment())
                 .addToBackStack(null)
                 .commit();
+    }
+
+    // Method to hide the buttons
+    private void hideButtons() {
+        Button signInButton = findViewById(R.id.buttonSignIn);
+        Button signUpButton = findViewById(R.id.buttonSignUp);
+        signInButton.setVisibility(View.GONE);
+        signUpButton.setVisibility(View.GONE);
+    }
+
+    // Method to show the buttons
+    public void showButtons() {
+        Button signInButton = findViewById(R.id.buttonSignIn);
+        Button signUpButton = findViewById(R.id.buttonSignUp);
+        signInButton.setVisibility(View.VISIBLE);
+        signUpButton.setVisibility(View.VISIBLE);
     }
 }
 
