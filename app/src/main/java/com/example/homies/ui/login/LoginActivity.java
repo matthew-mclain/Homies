@@ -20,6 +20,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Timber.plant(new Timber.DebugTree());
         Timber.tag(TAG).d("onCreate()");
         setContentView(R.layout.activity_login);
 
@@ -35,6 +36,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         signInButton.setOnClickListener(this);
         signUpButton.setOnClickListener(this);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Timber.tag(TAG).d("onStart()");
     }
 
     @Override
@@ -94,6 +101,36 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         Button signUpButton = findViewById(R.id.buttonSignUp);
         signInButton.setVisibility(View.VISIBLE);
         signUpButton.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Timber.tag(TAG).d("onResume()");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Timber.tag(TAG).d("onRestart()");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Timber.tag(TAG).d("onPause()");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Timber.tag(TAG).d("onStop()");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Timber.tag(TAG).d("onDestroy()");
     }
 }
 

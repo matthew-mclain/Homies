@@ -51,17 +51,6 @@ public class SignInFragment extends Fragment implements View.OnClickListener{
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        Timber.tag(TAG).d("onDestroyView()");
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Timber.tag(TAG).d("onDestroy()");
-    }
-    @Override
     public void onClick(View view){
         Timber.tag(TAG).d("onClick()");
 
@@ -93,6 +82,24 @@ public class SignInFragment extends Fragment implements View.OnClickListener{
     public void onPause() {
         Timber.tag(TAG).d("onPause()");
         super.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Timber.tag(TAG).d("onStop()");
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Timber.tag(TAG).d("onDestroyView()");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Timber.tag(TAG).d("onDestroy()");
     }
 }
 

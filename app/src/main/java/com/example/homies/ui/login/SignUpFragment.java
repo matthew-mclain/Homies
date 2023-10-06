@@ -58,17 +58,6 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
 
         return view;
     }
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        Timber.tag(TAG).d("onDestroyView()");
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Timber.tag(TAG).d("onDestroy()");
-    }
 
     @Override
     public void onClick(View view){
@@ -122,6 +111,24 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
     public void onPause() {
         Timber.tag(TAG).d("onPause()");
         super.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Timber.tag(TAG).d("onStop()");
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Timber.tag(TAG).d("onDestroyView()");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Timber.tag(TAG).d("onDestroy()");
     }
 }
 
