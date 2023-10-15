@@ -12,6 +12,8 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.homies.databinding.ActivityMainBinding;
 
+import timber.log.Timber;
+
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
