@@ -6,12 +6,12 @@
     android:padding="16dp">
 
     <EditText
-        android:id="@+id/editTextSignInUsername"
+        android:id="@+id/editTextSignInEmail"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:hint="@string/username"
-        android:inputType="text"
-        android:autofillHints="username" />
+        android:hint="@string/email"
+        android:inputType="textEmailAddress"
+        android:autofillHints="emailAddress" />
 
     <EditText
         android:id="@+id/editTextSignInPassword"
