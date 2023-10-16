@@ -9,12 +9,15 @@ import android.widget.LinearLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.homies.MainActivity;
 import com.example.homies.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import timber.log.Timber;
 
 
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
+    FirebaseAuth mAuth;
     private final String TAG = getClass().getSimpleName();
 
     @Override
@@ -23,13 +26,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         Timber.plant(new Timber.DebugTree());
         Timber.tag(TAG).d("onCreate()");
         setContentView(R.layout.activity_login);
-
-        // Check if the user is already logged in, if so, navigate to MainActivity
-        if (userIsLoggedIn()) {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-        }
-
+        mAuth = FirebaseAuth.getInstance();
         // Set a single onClick listener for both sign-in and sign-up buttons
         Button signInButton = findViewById(R.id.buttonSignIn);
         Button signUpButton = findViewById(R.id.buttonSignUp);
@@ -42,6 +39,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected void onStart() {
         super.onStart();
         Timber.tag(TAG).d("onStart()");
+
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if(currentUser != null){
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
     }
 
     @Override

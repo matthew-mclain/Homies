@@ -2,31 +2,34 @@ package com.example.homies.ui.login;
 
 import static android.content.DialogInterface.BUTTON_POSITIVE;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.LifecycleOwner;
-
 import com.example.homies.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 
 import timber.log.Timber;
 
 public class SignUpFragment extends Fragment implements View.OnClickListener, DialogInterface.OnClickListener{
 
-    EditText usernameET;
+    EditText emailET;
     EditText passwordET;
     EditText passwordConfirmET;
     LoginActivity loginActivity;
     View view;
+    FirebaseAuth mAuth;
     private final String TAG = getClass().getSimpleName();
 
 
@@ -41,7 +44,8 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
         Timber.tag(TAG).d("onCreateView()");
 
 
-        usernameET = view.findViewById((R.id.editTextSignInUsername));
+        mAuth = FirebaseAuth.getInstance();
+        emailET = view.findViewById((R.id.editTextSignInEmail));
         passwordET = view.findViewById(R.id.editTextSignInPassword);
         passwordConfirmET = view.findViewById(R.id.editTextSignInConfirmPassword);
 
@@ -64,35 +68,50 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
         Timber.tag(TAG).d("onClick()");
 
         if (view.getId() == R.id.buttonSignUpSubmit){
-            String username = usernameET.getText().toString();
-            String password = passwordET.getText().toString();
-            String passwordConfirm = passwordConfirmET.getText().toString();
+            String email = String.valueOf(emailET.getText());
+            String password = String.valueOf(passwordET.getText());
+            String passwordConfirm = String.valueOf(passwordConfirmET.getText());
             FragmentManager manager = getParentFragmentManager();
 
-
             //check if any field is empty
-            if (password.equals("") || passwordConfirm.equals("") || username.equals("")){
+            if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password) || TextUtils.isEmpty(passwordConfirm)){
                 // if yes for any, error dialog (type 0)
                 SignUpErrorDialogFragment dialog = new SignUpErrorDialogFragment(0);
                 dialog.show(manager, "SignInError");
+                return;
             }
-            //check if two passwords matches
-            else if (!password.equals(passwordConfirm)) {
-                //if not, error dialog (type 1)
-                SignUpErrorDialogFragment dialog = new SignUpErrorDialogFragment(1);
-                dialog.show(manager, "SignInError");
-            }
-            //check if username is already taken
 
-            //sign up completed
-            else {
-                new AlertDialog.Builder(requireActivity())
-                        .setTitle("Congratulations!")
-                        .setMessage("Successfully signed up for Homies!\nMove to Sign In page?")
-                        .setNegativeButton("NO", this)
-                        .setPositiveButton("YES", this)
-                        .create().show();
-            }
+            mAuth.createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                // Sign in success, update UI with the signed-in user's information
+                                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int button) {
+                                        if (button == DialogInterface.BUTTON_POSITIVE) {
+                                            // Handle positive button click (YES)
+                                            loginActivity.showSignInFragment();
+                                        } else if (button == DialogInterface.BUTTON_NEGATIVE) {
+                                            // Handle negative button click (NO)
+                                            loginActivity.showButtons(view);
+                                        }
+                                    }
+                                };
+                                new AlertDialog.Builder(requireActivity())
+                                        .setTitle("Congratulations!")
+                                        .setMessage("Successfully signed up for Homies!\nMove to Sign In page?")
+                                        .setNegativeButton("NO", dialogClickListener)
+                                        .setPositiveButton("YES", dialogClickListener)
+                                        .create().show();
+                            } else {
+                                // If sign in fails, display a message to the user.
+                                SignUpErrorDialogFragment dialog = new SignUpErrorDialogFragment(1);
+                                dialog.show(manager, "SignInError");
+                            }
+                        }
+                    });
 
         } else if (view.getId() == R.id.buttonBack){
             loginActivity.showButtons(this.view);
