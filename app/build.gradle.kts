@@ -56,4 +56,5 @@ dependencies {
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:32.3.1"))
     //add other SDKs that we want to use later (https://firebase.google.com/docs/android/setup#available-libraries)
+    implementation("com.google.firebase:firebase-firestore")
 }

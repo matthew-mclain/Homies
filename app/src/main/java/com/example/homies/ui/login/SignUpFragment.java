@@ -14,11 +14,20 @@ import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+
+import com.example.homies.MyApplication;
 import com.example.homies.R;
+import com.example.homies.model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import timber.log.Timber;
 
@@ -31,6 +40,7 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
     View view;
     FirebaseAuth mAuth;
     private final String TAG = getClass().getSimpleName();
+    private FirebaseFirestore db;
 
 
     public SignUpFragment(LoginActivity loginActivity) {
@@ -45,6 +55,8 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
 
 
         mAuth = FirebaseAuth.getInstance();
+        db = MyApplication.getDbInstance();
+
         emailET = view.findViewById((R.id.editTextSignInEmail));
         passwordET = view.findViewById(R.id.editTextSignInPassword);
         passwordConfirmET = view.findViewById(R.id.editTextSignInConfirmPassword);
@@ -86,6 +98,29 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
+                                //Create User
+                                String userId = mAuth.getCurrentUser().getUid();
+                                String email = mAuth.getCurrentUser().getEmail();
+
+                                User user = new User(userId, email, null);
+
+                                db.collection("users")
+                                        .document(userId)
+                                        .set(user)
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                // User added to Firestore successfully
+                                                // Handle UI updates or navigate to the next screen
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                // Handle Firestore user creation failure
+                                            }
+                                        });
+
                                 // Sign in success, update UI with the signed-in user's information
                                 DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
                                     @Override
