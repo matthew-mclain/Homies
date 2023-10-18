@@ -3,34 +3,34 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/messagesFragment">
+    app:startDestination="@+id/navigation_messages">
 
     <fragment
-        android:id="@+id/messagesFragment"
+        android:id="@+id/navigation_messages"
         android:name="com.example.homies.ui.messages.MessagesFragment"
         android:label="Messages"
         tools:layout="@layout/fragment_messages" />
 
     <fragment
-        android:id="@+id/groceryListFragment"
+        android:id="@+id/navigation_grocery_list"
         android:name="com.example.homies.ui.grocery_list.GroceryListFragment"
         android:label="Grocery List"
         tools:layout="@layout/fragment_grocery_list" />
 
     <fragment
-        android:id="@+id/laundryFragment"
+        android:id="@+id/navigation_laundry"
         android:name="com.example.homies.ui.laundry.LaundryFragment"
         android:label="Laundry"
         tools:layout="@layout/fragment_laundry" />
 
     <fragment
-        android:id="@+id/calendarFragment"
+        android:id="@+id/navigation_calendar"
         android:name="com.example.homies.ui.calendar.CalendarFragment"
         android:label="Calendar"
         tools:layout="@layout/fragment_calendar" />
 
     <fragment
-        android:id="@+id/locationFragment"
+        android:id="@+id/navigation_location"
         android:name="com.example.homies.ui.location.LocationFragment"
         android:label="Location"
         tools:layout="@layout/fragment_location" />
