@@ -10,4 +10,9 @@
     <string name="sign_up">Sign Up</string>
     <string name="homies">Homies</string>
     <string name="back">Back</string>
+    <string name="messages">Messages</string>
+    <string name="grocery_list">Grocery List</string>
+    <string name="laundry">Laundry</string>
+    <string name="calendar">Calendar</string>
+    <string name="location">Location</string>
 </resources>

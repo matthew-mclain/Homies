@@ -3,23 +3,35 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/messagesFragment">
 
     <fragment
-        android:id="@+id/navigation_home"
-        android:name="com.example.homies.ui.home.HomeFragment"
-        android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        android:id="@+id/messagesFragment"
+        android:name="com.example.homies.ui.messages.MessagesFragment"
+        android:label="Messages"
+        tools:layout="@layout/fragment_messages" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.example.homies.ui.dashboard.DashboardFragment"
-        android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        android:id="@+id/groceryListFragment"
+        android:name="com.example.homies.ui.grocery_list.GroceryListFragment"
+        android:label="Grocery List"
+        tools:layout="@layout/fragment_grocery_list" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.example.homies.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        android:id="@+id/laundryFragment"
+        android:name="com.example.homies.ui.laundry.LaundryFragment"
+        android:label="Laundry"
+        tools:layout="@layout/fragment_laundry" />
+
+    <fragment
+        android:id="@+id/calendarFragment"
+        android:name="com.example.homies.ui.calendar.CalendarFragment"
+        android:label="Calendar"
+        tools:layout="@layout/fragment_calendar" />
+
+    <fragment
+        android:id="@+id/locationFragment"
+        android:name="com.example.homies.ui.location.LocationFragment"
+        android:label="Location"
+        tools:layout="@layout/fragment_location" />
 </navigation>

@@ -28,6 +28,36 @@
             android:label="@string/app_name">
         </activity>
 
+        <activity
+            android:name=".ui.messages.MessagesActivity"
+            android:exported="true"
+            android:label="Messages">
+        </activity>
+
+        <activity
+            android:name=".ui.grocery_list.GroceryListActivity"
+            android:exported="true"
+            android:label="GroceryList">
+        </activity>
+
+        <activity
+            android:name=".ui.laundry.LaundryActivity"
+            android:exported="true"
+            android:label="Laundry">
+        </activity>
+
+        <activity
+            android:name=".ui.calendar.CalendarActivity"
+            android:exported="true"
+            android:label="Calendar">
+        </activity>
+
+        <activity
+            android:name=".ui.location.LocationActivity"
+            android:exported="true"
+            android:label="Location">
+        </activity>
+
     </application>
 
 </manifest>
