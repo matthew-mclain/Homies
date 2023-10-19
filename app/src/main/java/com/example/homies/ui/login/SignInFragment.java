@@ -35,7 +35,6 @@ public class SignInFragment extends Fragment implements View.OnClickListener{
 
     public SignInFragment(LoginActivity loginActivity) {
         this.loginActivity = loginActivity;
-
     }
 
     @Override
@@ -82,7 +81,6 @@ public class SignInFragment extends Fragment implements View.OnClickListener{
                     .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
-
                             if (task.isSuccessful()) {
                                 // Sign in success, update UI with the signed-in user's information
                                 Intent intent = new Intent(getActivity(), MainActivity.class);
@@ -95,7 +93,7 @@ public class SignInFragment extends Fragment implements View.OnClickListener{
                         }
                     });
 
-        } else if (view.getId() == R.id.buttonBack){
+        } else if (view.getId() == R.id.buttonBack) {
             loginActivity.showButtons(this.view);
         }
 

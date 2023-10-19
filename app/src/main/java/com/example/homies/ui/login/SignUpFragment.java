@@ -106,20 +106,7 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
 
                                 db.collection("users")
                                         .document(userId)
-                                        .set(user)
-                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void aVoid) {
-                                                // User added to Firestore successfully
-                                                // Handle UI updates or navigate to the next screen
-                                            }
-                                        })
-                                        .addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                // Handle Firestore user creation failure
-                                            }
-                                        });
+                                        .set(user);
 
                                 // Sign in success, update UI with the signed-in user's information
                                 DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
