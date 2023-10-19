@@ -102,11 +102,7 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
                                 String userId = mAuth.getCurrentUser().getUid();
                                 String email = mAuth.getCurrentUser().getEmail();
 
-                                User user = new User(userId, email, null);
-
-                                db.collection("users")
-                                        .document(userId)
-                                        .set(user);
+                                User.createUser(userId, email);
 
                                 // Sign in success, update UI with the signed-in user's information
                                 DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {

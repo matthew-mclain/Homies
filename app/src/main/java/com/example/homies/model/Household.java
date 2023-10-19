@@ -34,21 +34,22 @@ public class Household {
     }
 
     public static void createHousehold(String householdId, String householdName, User creatorUser) {
-        // Create a new Household object with provided parameters
         Household household = new Household(householdId, householdName);
 
         // Add creator user to the household
         household.addUser(creatorUser);
 
-        // Add the new household to the Firestore database
+        db = MyApplication.getDbInstance();
         db.collection("households")
                 .document(household.getHouseholdId())
                 .set(household);
     }
 
-    // Method to delete the household from Firestore
     public static void deleteHousehold(String householdId) {
-        db.collection("households").document(householdId).delete();
+        db = MyApplication.getDbInstance();
+        db.collection("households")
+                .document(householdId)
+                .delete();
     }
 
     public void joinHousehold() {
