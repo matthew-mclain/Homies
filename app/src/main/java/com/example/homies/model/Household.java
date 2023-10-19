@@ -9,15 +9,24 @@ public class Household {
     private String householdId;
     private String householdName;
     private CollectionReference householdUsers;
+    private GroupChat groupChat;
+    private GroceryList groceryList;
+    private LaundryManager laundryManager;
+    private Calendar calendar;
     private static FirebaseFirestore db;
 
-    public Household(String householdId, String householdName ){
+    public Household(String householdId, String householdName){
         this.householdId = householdId;
         this.householdName = householdName;
         this.householdUsers = MyApplication.getDbInstance()
                 .collection("households")
                 .document(householdId)
                 .collection("users");
+
+        this.groupChat = new GroupChat();
+        this.groceryList = new GroceryList();
+        this.laundryManager = new LaundryManager();
+        this.calendar = new Calendar();
     }
 
     public String getHouseholdId() {
