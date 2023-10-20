@@ -7,6 +7,9 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import com.example.homies.databinding.ActivityMainBinding;
 import com.example.homies.model.Household;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     public DrawerLayout drawerLayout;
     public ActionBarDrawerToggle actionBarDrawerToggle;
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
     private LiveData<List<Household>> householdsLiveData;
 
 
@@ -51,6 +56,35 @@ public class MainActivity extends AppCompatActivity {
         actionBarDrawerToggle.syncState();
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mAuth = FirebaseAuth.getInstance();
+        db = MyApplication.getDbInstance();
+
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            String userId = currentUser.getUid();
+
+            // Perform a query to check if the user is in a household
+            db.collection("users")
+                    .document(userId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String householdId = documentSnapshot.getString("householdId");
+                            if (householdId == null) {
+                                // User is not in a household, handle the logic here
+                                // You can prompt the user to join or create a household
+                            }
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle errors here
+                    });
+        }
     }
 
     // override the onOptionsItemSelected()

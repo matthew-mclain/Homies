@@ -20,4 +20,8 @@
     <string name="join_household">Join Household</string>
     <string name="create_household">Create Household</string>
     <string name="sign_out">Sign Out</string>
+    <string name="create_or_join_a_household">Create or Join a Household</string>
+    <string name="create">Create</string>
+    <string name="household_name">Household Name</string>
+    <string name="join">Join</string>
 </resources>
