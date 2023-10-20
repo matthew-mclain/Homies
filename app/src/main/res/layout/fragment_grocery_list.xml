@@ -4,4 +4,23 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="367dp"
+        android:text="Groceries List" />
+
+    <EditText
+        android:id="@+id/editTextGroceryItem"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Item"
+        android:inputType="textAutoCorrect"/>
+
+    <Button
+        android:id="@+id/addButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add" />
 </LinearLayout>

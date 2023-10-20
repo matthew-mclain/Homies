@@ -19,7 +19,7 @@ public class Household {
     private String householdName;
     private CollectionReference householdUsers;
     private GroupChat groupChat;
-    private GroceryList groceryList;
+    private Grocery groceryList;
     private LaundryManager laundryManager;
     private Calendar calendar;
     private static FirebaseFirestore db;
@@ -39,7 +39,7 @@ public class Household {
                 .collection("users");
 
         this.groupChat = new GroupChat();
-        this.groceryList = new GroceryList();
+        this.groceryList = new Grocery();
         this.laundryManager = new LaundryManager();
         this.calendar = new Calendar();
     }
