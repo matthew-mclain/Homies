@@ -6,6 +6,8 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.sql.Time;
+import java.util.HashMap;
+import java.util.Map;
 
 import timber.log.Timber;
 
@@ -35,13 +37,17 @@ public class Laundry {
                 .get();
     }
 
-    public static void addMachine(String machineID, String machineName){
-        Laundry machine = new Laundry(householdID, machineName);
+    public static void createMachine(String machineID, String machineName){
+        Map<String, Object> data = new HashMap<>();
+        data.put("machineName", machineName);
+        data.put("startTime", null);
+        data.put("duration", 60);
+        data.put("usedBy", null);
 
         db = MyApplication.getDbInstance();
         db.collection("laundry")
                 .document(machineID)
-                .set(machine)
+                .set(data)
                 .addOnSuccessListener(aVoid -> {
                     // User removed from household successfully
                     Timber.tag(TAG).d("Machine Added: %s", machineID);

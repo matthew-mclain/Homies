@@ -6,47 +6,51 @@
     android:padding="16dp">
 
     <EditText
-        android:id="@+id/eventTitleTextBox"
+        android:id="@+id/editTextEventTitle"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:ems="10"
-        android:inputType="text"
-        android:text="Event Title" />
+        android:hint="Event Title"
+        android:inputType="text" />
 
     <EditText
-        android:id="@+id/editTextText2"
+        android:id="@+id/editTextEventDetail"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:ems="10"
-        android:inputType="text"
-        android:text="Event Detail" />
+        android:hint="Event Detail"
+        android:inputType="text" />
 
     <EditText
-        android:id="@+id/editTextDate"
+        android:id="@+id/editTextStartDate"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:ems="10"
+        android:hint="Start Date"
         android:inputType="date" />
 
     <EditText
-        android:id="@+id/editTextTime"
+        android:id="@+id/editTextStartTime"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:ems="10"
+        android:hint="Start Time"
         android:inputType="time" />
 
     <EditText
-        android:id="@+id/editTextDate2"
+        android:id="@+id/editTextEndDate"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:ems="10"
+        android:hint="End Date"
         android:inputType="date" />
 
     <EditText
-        android:id="@+id/editTextTime2"
+        android:id="@+id/editTextEndTime"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:ems="10"
+        android:hint="End Time"
         android:inputType="time" />
 
     <Button

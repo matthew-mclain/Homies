@@ -4,9 +4,12 @@ import com.example.homies.MyApplication;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import timber.log.Timber;
 
-public class Event {
+public class CalendarEvent {
 
     private static String householdID, eventTitle, eventDetail;
     private static Timestamp startTime, endTime;
@@ -14,9 +17,9 @@ public class Event {
     private static FirebaseFirestore db;
 
 
-    private static final String TAG = Event.class.getSimpleName();
+    private static final String TAG = CalendarEvent.class.getSimpleName();
 
-    public Event(String eventTitle, String eventDetail, Timestamp startTime, Timestamp endTime, String householdID){
+    public CalendarEvent(String eventTitle, String eventDetail, Timestamp startTime, Timestamp endTime, String householdID){
         this.eventTitle = eventTitle;
         this.eventDetail = eventDetail;
         this.startTime = startTime;
@@ -25,13 +28,17 @@ public class Event {
     }
 
     public static void createEvent(String eventID, String eventTitle, String eventDetail, Timestamp startTime, Timestamp endTime){
-
-        Event event = new Event(eventTitle, eventDetail, startTime, endTime, householdID);
+        Map<String, Object> data = new HashMap<>();
+        data.put("eventTitle", eventTitle);
+        data.put("eventDetail", eventDetail);
+        data.put("start", null);
+        data.put("end", null);
+        data.put("householdID", householdID);
 
         db = MyApplication.getDbInstance();
         db.collection("calendar")
                 .document(eventID)
-                .set(event)
+                .set(data)
                 .addOnSuccessListener(aVoid -> {
                     // User removed from household successfully
                     Timber.tag(TAG).d("Event Added: %s", eventID);
