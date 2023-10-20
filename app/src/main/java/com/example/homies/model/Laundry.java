@@ -7,6 +7,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.sql.Time;
 
+import timber.log.Timber;
+
 public class Laundry {
     private static FirebaseFirestore db;
 
@@ -15,6 +17,8 @@ public class Laundry {
     private static String usedBy;
     private static Timestamp startTime;
     private static Number durationMin;
+
+    private static final String TAG = Laundry.class.getSimpleName();
 
     public Laundry(String householdID, String machineName){
         this.householdID = householdID;
@@ -37,14 +41,31 @@ public class Laundry {
         db = MyApplication.getDbInstance();
         db.collection("laundry")
                 .document(machineID)
-                .set(machine);
+                .set(machine)
+                .addOnSuccessListener(aVoid -> {
+                    // User removed from household successfully
+                    Timber.tag(TAG).d("Machine Added: %s", machineID);
+                })
+                .addOnFailureListener(e -> {
+                    // Handle errors
+                    Timber.tag(TAG).e(e, "Error adding machine: %s", machineID);
+                });
     }
+
 
     public static void deleteMachine(String machineID){
         // TO DO: check if dryer is being used
         db = MyApplication.getDbInstance();
         db.collection("laundry")
                 .document(machineID)
-                .delete();
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    // User removed from household successfully
+                    Timber.tag(TAG).d("Machine deleted: %s", machineID);
+                })
+                .addOnFailureListener(e -> {
+                    // Handle errors
+                    Timber.tag(TAG).e(e, "Error deleting machine: %s", machineID);
+                });
     }
 }
