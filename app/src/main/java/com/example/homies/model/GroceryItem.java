@@ -23,14 +23,23 @@ public class GroceryItem {
     private static FirebaseFirestore db;
     private static final String TAG = GroceryItem.class.getSimpleName();
 
-    public GroceryItem(String groceryItemId, String groceryItemName, String groceryListId) {
-        this.groceryItemId = groceryItemId;
+    public GroceryItem(){}
+
+    public GroceryItem(String groceryItemName, String groceryListId) {
         this.groceryItemName = groceryItemName;
         this.groceryListId = groceryListId;
     }
 
-    public static void createGroceryItem(String groceryItemId, String groceryItemName, String groceryListId) {
-        GroceryItem groceryItem = new GroceryItem(groceryItemId, groceryItemName, groceryListId);
+    public String getGroceryItemId() {
+        return groceryItemId;
+    }
+
+    public String getGroceryItemName() {
+        return groceryItemName;
+    }
+
+    public static void createGroceryItem(String groceryItemName, String groceryListId) {
+        GroceryItem groceryItem = new GroceryItem(groceryItemName, groceryListId);
         db = MyApplication.getDbInstance();
         db.collection("groceryLists")
                 .document(groceryListId)
@@ -39,6 +48,14 @@ public class GroceryItem {
                 .addOnSuccessListener(documentReference -> {
                     String itemId = documentReference.getId();
                     Timber.tag(TAG).d("GroceryItem created with ID: %s", itemId);
+                    Map<String, Object> docData = new HashMap<>();
+                    docData.put("itemID", itemId);
+                    db.collection("groceryLists")
+                            .document(groceryListId)
+                            .collection("groceryItems")
+                            .document(itemId)
+                            .set(docData);
+                    groceryItem.setGroceryItemId(itemId);
                 })
                 .addOnFailureListener(e -> {
                     // Handle errors here
@@ -78,7 +95,7 @@ public class GroceryItem {
                 });
     }
 
-    public String getGroceryItemId() {
-        return groceryItemId;
+    public void setGroceryItemId(String id) {
+        this.groceryItemId = id;
     }
 }
