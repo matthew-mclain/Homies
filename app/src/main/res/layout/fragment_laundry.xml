@@ -4,4 +4,18 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
+
+    <EditText
+        android:id="@+id/editTextMachineName"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:ems="10"
+        android:hint="Machine Name"
+        android:inputType="text" />
+
+    <Button
+        android:id="@+id/addMachineButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add" />
 </LinearLayout>
