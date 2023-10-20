@@ -15,4 +15,9 @@
     <string name="laundry">Laundry</string>
     <string name="calendar">Calendar</string>
     <string name="location">Location</string>
+    <string name="nav_open">Open</string>
+    <string name="nav_close">Close</string>
+    <string name="join_household">Join Household</string>
+    <string name="create_household">Create Household</string>
+    <string name="sign_out">Sign Out</string>
 </resources>
