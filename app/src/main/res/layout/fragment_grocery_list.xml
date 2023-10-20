@@ -4,4 +4,53 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
+
+    <ListView
+        android:id="@+id/groceryLV"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="Groceries List" />
+
+    <EditText
+        android:id="@+id/editTextGroceryItem"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Item"
+        android:inputType="textAutoCorrect"/>
+
+    <Button
+        android:id="@+id/addButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add" />
+
+    <EditText
+        android:id="@+id/deleteTextGroceryItem"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Item"
+        android:inputType="textAutoCorrect"/>
+    <Button
+        android:id="@+id/deleteButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Delete" />
+
+    <EditText
+        android:id="@+id/TextOldGroceryItem"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="oldItemName"
+        android:inputType="textAutoCorrect"/>
+    <EditText
+        android:id="@+id/TextNewGroceryItem"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="newItemName"
+        android:inputType="textAutoCorrect"/>
+    <Button
+        android:id="@+id/updateButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Update" />
 </LinearLayout>
