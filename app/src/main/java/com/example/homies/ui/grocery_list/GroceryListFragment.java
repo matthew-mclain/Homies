@@ -16,13 +16,12 @@ import androidx.fragment.app.Fragment;
 
 import com.example.homies.MyApplication;
 import com.example.homies.R;
-import com.example.homies.model.Grocery;
+import com.example.homies.model.GroceryList;
 import com.example.homies.model.GroceryItem;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -31,6 +30,7 @@ import java.sql.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import timber.log.Timber;
 
@@ -96,25 +96,26 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
         if (view.getId() == R.id.addButton) {
             Timber.tag(TAG).d("add");
             String itemName = String.valueOf(itemET.getText());
-            Grocery g = new Grocery("123");
-            GroceryItem item = new GroceryItem(itemName, g.getHouseholdId());
-            item.createGroceryItem(itemName);
+            GroceryList g = new GroceryList("123");
+            GroceryItem.createGroceryItem(UUID.randomUUID().toString(), itemName, g.getHouseholdId());
         }
         if (view.getId() == R.id.deleteButton) {
             Timber.tag(TAG).d("delete");
             String itemName = String.valueOf(itemDeleteET.getText());
-            Grocery g = new Grocery("123");
-            GroceryItem item = new GroceryItem(itemName, g.getHouseholdId());
-            item.deleteItem(itemName);
+            GroceryList g = new GroceryList("123");
+            GroceryItem item = new GroceryItem(itemName, g.getHouseholdId(), g.getGroceryListId());
+            item.deleteGroceryItem(g.getHouseholdId(), item.getGroceryItemId());
         }
 
         if (view.getId() == R.id.updateButton) {
             Timber.tag(TAG).d("update");
             String oldItem = String.valueOf(itemOldET.getText());
             String newItem = String.valueOf(itemNewET.getText());
-            Grocery g = new Grocery("123");
-            GroceryItem item = new GroceryItem(oldItem, g.getHouseholdId());
-            item.updateItem(oldItem, newItem);
+            String groceryListId = "123";
+            String groceryItemId = "123";
+            GroceryList g = new GroceryList("groceryListId");
+            GroceryItem item = new GroceryItem("groceryItemId", oldItem, g.getHouseholdId());
+            item.updateGroceryItem(newItem, groceryItemId, groceryListId);
         }
 
 //        private void initializeListView() {
