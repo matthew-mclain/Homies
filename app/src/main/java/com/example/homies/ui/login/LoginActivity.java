@@ -22,6 +22,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        FirebaseAuth.getInstance().signOut();
         super.onCreate(savedInstanceState);
         Timber.tag(TAG).d("onCreate()");
         setContentView(R.layout.activity_login);
