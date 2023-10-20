@@ -57,17 +57,18 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
         groceryArrayList = new ArrayList<String>();
         db = MyApplication.getDbInstance();
 
-        db.collection("grocery").whereEqualTo("householdId", "123")
+        //Retrieve data
+        db.collection("groceryLists/123/groceryItems")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
+                            Timber.tag(TAG).d("isSuccessful");
                             for (QueryDocumentSnapshot document : task.getResult()) {
+                                Timber.tag(TAG).d(task.getResult().toString());
                                 Timber.tag(TAG).d(document.getId() + " => " + document.getData());
                             }
-                        } else {
-                            Timber.tag(TAG).d("onClick()");
                         }
                     }
                     });
