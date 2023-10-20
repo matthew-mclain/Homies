@@ -8,23 +8,41 @@ import java.util.Date;
 
 public class Calendar {
 
-    private static String householdID;
+    private static String householdID, eventTitle, eventDetail;
+    private static Timestamp startTime, endTime;
 
     private static FirebaseFirestore db;
 
-    public Calendar(String householdID){
+    public Calendar(String eventTitle, String eventDetail, Timestamp startTime, Timestamp endTime, String householdID){
+        this.eventTitle = eventTitle;
+        this.eventDetail = eventDetail;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.householdID = householdID;
     }
 
-    public static void createEvent(String eventTitle, String eventDetail, Timestamp startTime, Timestamp endTime){
-        String eventID = "event"+householdID+new Date().getTime();
+    public static void createEvent(String eventID, String eventTitle, String eventDetail, Timestamp startTime, Timestamp endTime){
 
-        CalendarEvent event = new CalendarEvent(eventID, eventTitle, eventDetail, startTime, endTime, householdID);
+        Calendar event = new Calendar(eventTitle, eventDetail, startTime, endTime, householdID);
 
         db = MyApplication.getDbInstance();
         db.collection("calendar")
                 .document(eventID)
                 .set(event);
+    }
+
+    public static void deleteEvent(String eventID){
+        db = MyApplication.getDbInstance();
+        db.collection("calendar")
+                .document(eventID)
+                .delete();
+    }
+
+    public static void changeEvent(String eventID, String fieldName, Object obj) {
+        db = MyApplication.getDbInstance();
+        db.collection("calendar")
+                .document(eventID)
+                .update(fieldName, obj);
     }
 
 }
