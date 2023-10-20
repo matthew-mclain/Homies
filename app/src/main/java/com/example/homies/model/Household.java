@@ -21,9 +21,9 @@ public class Household {
     private GroupChat groupChat;
     private GroceryList groceryList;
     private LaundryManager laundryManager;
-    private Calendar event;
+    private Calendar calendar;
     private static FirebaseFirestore db;
-    private static final String TAG = User.class.getSimpleName();
+    private static final String TAG = Household.class.getSimpleName();
     private static final MutableLiveData<List<Household>> householdsLiveData = new MutableLiveData<>();
 
     public static LiveData<List<Household>> getHouseholdsLiveData() {
@@ -38,10 +38,10 @@ public class Household {
                 .document(householdId)
                 .collection("users");
 
-        this.groupChat = new GroupChat();
-        this.groceryList = new GroceryList();
-        this.laundryManager = new LaundryManager();
-        this.event = new Calendar();
+        //this.groupChat = new GroupChat();
+        //this.groceryList = new GroceryList();
+        //this.laundryManager = new LaundryManager();
+        //this.calendar = new Calendar();
     }
 
     public String getHouseholdId() {
