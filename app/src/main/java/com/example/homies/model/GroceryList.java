@@ -17,23 +17,27 @@ public class GroceryList {
     private static FirebaseFirestore db;
     private static final String TAG = GroceryList.class.getSimpleName();
 
-    public GroceryList(String householdId){
+    public GroceryList(String groceryListId){
+        //groceryID set to householdID temporarily
         this.groceryListId = groceryListId;
-        this.householdId = householdId;
+        this.householdId = groceryListId;
 //        this.groceryItems = new ArrayList<>();
     }
     public String getHouseholdId() {
         return householdId;
+    }
+    public String getGroceryListId() {
+        return groceryListId;
     }
 
 //    public List<GroceryItem> getGroceryItems() {
 //        return groceryItems;
 //    }
 
-    public void createGroceryList(String householdId) {
-        GroceryList groceryList = new GroceryList(householdId);
+    public void createGroceryList(String groceryListId, String householdId) {
         Map<String, Object> docData = new HashMap<>();
         docData.put("householdId", householdId);
+        docData.put("groceryListId", groceryListId);
         db = MyApplication.getDbInstance();
         db.collection("groceryLists").document(householdId)
                 .set(docData)
@@ -57,9 +61,5 @@ public class GroceryList {
                     // Handle errors here
                     Timber.tag(TAG).e(e, "Error deleting GroceryList with ID: %s", groceryListId);
                 });
-    }
-
-    public String getGroceryListId() {
-        return groceryListId;
     }
 }

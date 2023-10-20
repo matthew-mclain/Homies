@@ -38,8 +38,9 @@ public class GroceryItem {
         return groceryItemName;
     }
 
-    public static void createGroceryItem(String groceryItemName, String groceryListId) {
+    public static void createGroceryItem(String groceryListId, String groceryItemName) {
         GroceryItem groceryItem = new GroceryItem(groceryItemName, groceryListId);
+        Timber.tag(TAG).d(groceryItem.toString());
         db = MyApplication.getDbInstance();
         db.collection("groceryLists")
                 .document(groceryListId)
@@ -49,7 +50,8 @@ public class GroceryItem {
                     String itemId = documentReference.getId();
                     Timber.tag(TAG).d("GroceryItem created with ID: %s", itemId);
                     Map<String, Object> docData = new HashMap<>();
-                    docData.put("itemID", itemId);
+                    docData.put("itemId", itemId);
+                    docData.put("itemName", groceryItemName);
                     db.collection("groceryLists")
                             .document(groceryListId)
                             .collection("groceryItems")
@@ -63,35 +65,56 @@ public class GroceryItem {
                 });
     }
 
-    public void deleteGroceryItem(String groceryListId, String groceryItemId) {
+    public static void deleteGroceryItem(String groceryListId, String itemName) {
+        Timber.tag(TAG).d("groceryListId: "+ groceryListId);
         db = MyApplication.getDbInstance();
-        db.collection("groceryLists")
-                .document(groceryListId)
+        db.collection("groceryLists").document(groceryListId)
                 .collection("groceryItems")
-                .document(groceryItemId)
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    Timber.tag(TAG).d("GroceryItem with ID: %s deleted successfully", groceryItemId);
-                })
-                .addOnFailureListener(e -> {
-                    // Handle errors here
-                    Timber.tag(TAG).e(e, "Error deleting GroceryItem");
+                .whereEqualTo("itemName", itemName)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Timber.tag(TAG).d(document.getId() + " => " + document.getData());
+                                //Delete
+                                db.collection("groceryLists").document(groceryListId)
+                                        .collection("groceryItems")
+                                        .document(document.getId())
+                                        .delete();
+                            }
+                            Timber.tag(TAG).d("delete success");
+                        } else {
+                            Timber.tag(TAG).d("?");
+                        }
+                    }
                 });
     }
 
-    public void updateGroceryItem(String newName, String groceryItemId, String groceryListId) {
+    public static void updateGroceryItem(String oldName, String newName, String groceryListId) {
         db = MyApplication.getDbInstance();
-        db.collection("groceryLists")
-                .document(groceryListId)
+        db.collection("groceryLists").document(groceryListId)
                 .collection("groceryItems")
-                .document(groceryItemId)
-                .update("groceryItemName", newName)
-                .addOnSuccessListener(aVoid -> {
-                    Timber.tag(TAG).d("GroceryItem with ID: %s updated successfully", groceryItemId);
-                })
-                .addOnFailureListener(e -> {
-                    // Handle errors here
-                    Timber.tag(TAG).e(e, "Error updating GroceryItem");
+                .whereEqualTo("itemName", oldName)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Timber.tag(TAG).d(document.getId() + " => " + document.getData());
+                                //Update
+                                db.collection("groceryLists").document(groceryListId)
+                                        .collection("groceryItems")
+                                        .document(document.getId())
+                                        .update("itemName", newName);
+                            }
+                            Timber.tag(TAG).d("update success");
+                        } else {
+                            Timber.tag(TAG).d("?");
+                        }
+                    }
                 });
     }
 
