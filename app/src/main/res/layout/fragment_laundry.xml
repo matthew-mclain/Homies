@@ -7,14 +7,17 @@
 
     <EditText
         android:id="@+id/machineNameTextBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
         android:ems="10"
-        android:inputType="text" />
+        android:hint="@string/enter_machine_name"
+        android:importantForAccessibility="yes"
+        android:inputType="text"
+        android:autofillHints="Enter Machine" />
 
     <Button
         android:id="@+id/addMachineButton"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add" />
+        android:text="@string/add" />
 </LinearLayout>

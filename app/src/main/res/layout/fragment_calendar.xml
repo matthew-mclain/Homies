@@ -8,7 +8,7 @@
     <EditText
         android:id="@+id/eventTitleTextBox"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:ems="10"
         android:inputType="text"
         android:text="Event Title" />
@@ -16,42 +16,46 @@
     <EditText
         android:id="@+id/editTextText2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:ems="10"
         android:inputType="text"
         android:text="Event Detail" />
 
     <EditText
         android:id="@+id/editTextDate"
+        android:hint="Date1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:ems="10"
         android:inputType="date" />
 
     <EditText
         android:id="@+id/editTextTime"
+        android:hint="Time1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:ems="10"
         android:inputType="time" />
 
     <EditText
         android:id="@+id/editTextDate2"
+        android:hint="Date2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:ems="10"
         android:inputType="date" />
 
     <EditText
         android:id="@+id/editTextTime2"
+        android:hint="Time2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:ems="10"
         android:inputType="time" />
 
     <Button
         android:id="@+id/addEventButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:text="Add" />
 </LinearLayout>
