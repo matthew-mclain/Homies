@@ -49,7 +49,8 @@ public class GroceryItem {
                     String itemId = documentReference.getId();
                     Timber.tag(TAG).d("GroceryItem created with ID: %s", itemId);
                     Map<String, Object> docData = new HashMap<>();
-                    docData.put("itemID", itemId);
+                    docData.put("itemId", itemId);
+                    docData.put("itemName", groceryItemName);
                     db.collection("groceryLists")
                             .document(groceryListId)
                             .collection("groceryItems")
