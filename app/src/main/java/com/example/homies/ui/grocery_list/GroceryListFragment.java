@@ -104,7 +104,7 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
             String itemName = String.valueOf(itemDeleteET.getText());
             GroceryList g = new GroceryList("123");
             GroceryItem item = new GroceryItem(itemName, g.getHouseholdId(), g.getGroceryListId());
-            item.deleteGroceryItem(g.getHouseholdId(), item.getGroceryItemId());
+            item.deleteGroceryItem(g.getGroceryListId(), item.getGroceryItemId());
         }
 
         if (view.getId() == R.id.updateButton) {

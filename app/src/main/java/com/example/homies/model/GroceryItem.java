@@ -1,7 +1,15 @@
 package com.example.homies.model;
 
+import androidx.annotation.NonNull;
+
 import com.example.homies.MyApplication;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -74,5 +82,3 @@ public class GroceryItem {
         return groceryItemId;
     }
 }
-
-
