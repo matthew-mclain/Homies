@@ -4,10 +4,14 @@
     tools:ignore="hardcodeText">
 
     <item
-        android:id="@+id/nav_household"
-        android:title="Household 1" />
+        android:id="@+id/nav_create_household"
+        android:title="@string/create_household" />
 
     <item
-        android:id="@+id/nav_logout"
-        android:title="Logout"/>
+        android:id="@+id/join_household"
+        android:title="@string/join_household"/>
+
+    <item
+        android:id="@+id/sign_out"
+        android:title="@string/sign_out"/>
 </menu>

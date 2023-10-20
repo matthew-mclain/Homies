@@ -2,6 +2,11 @@ package com.example.homies.model;
 
 import com.example.homies.MyApplication;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import timber.log.Timber;
 
 public class User {
@@ -30,7 +35,7 @@ public class User {
         return displayName;
     }
 
-    public static void getUsers(String userId) {
+    public static void getUser(String userId) {
         db = MyApplication.getDbInstance();
         db.collection("users")
                 .document(userId)
@@ -47,6 +52,23 @@ public class User {
                 .addOnFailureListener(e -> {
                     // Handle errors
                     Timber.tag(TAG).e(e, "Error getting user data for user ID: %s", userId);
+                });
+    }
+
+    public static void getUsers() {
+        db = MyApplication.getDbInstance();
+        db.collection("users")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<User> userList = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        User user = document.toObject(User.class);
+                        userList.add(user);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // Handle errors
+                    Timber.tag(TAG).e(e, "Error getting users data");
                 });
     }
 
