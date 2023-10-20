@@ -77,7 +77,7 @@ public class Household {
                 });
     }
 
-    public static void getHouseholds(String householdId) {
+    public static void getAllHouseholds() {
         db = MyApplication.getDbInstance();
         db.collection("households")
                 .get()

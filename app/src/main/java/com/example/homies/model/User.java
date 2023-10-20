@@ -55,7 +55,7 @@ public class User {
                 });
     }
 
-    public static void getUsers() {
+    public static void getAllUsers() {
         db = MyApplication.getDbInstance();
         db.collection("users")
                 .get()
