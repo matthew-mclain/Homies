@@ -20,7 +20,6 @@ public class Household {
     private CollectionReference householdUsers;
     private GroupChat groupChat;
     private GroceryList groceryList;
-    private LaundryManager laundryManager;
     private Calendar calendar;
     private static FirebaseFirestore db;
     private static final String TAG = Household.class.getSimpleName();
