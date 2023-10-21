@@ -63,14 +63,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    // Method to check if the user is already logged in
-    private boolean userIsLoggedIn() {
-        // Implement your logic to check if the user is logged in
-        // For example, you can check shared preferences, a local database, or an API
-        // Return true if logged in, false otherwise
-        return false; // Return false for demonstration purposes
-    }
-
     // Method to switch to SignUpFragment
     public void showSignUpFragment() {
         hideButtons();

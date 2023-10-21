@@ -1,11 +1,13 @@
 package com.example.homies;
 
+import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.example.homies.databinding.ActivityMainBinding;
 import com.example.homies.model.Household;
+import com.example.homies.ui.household.HouseholdActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -76,8 +78,39 @@ public class MainActivity extends AppCompatActivity {
                         if (documentSnapshot.exists()) {
                             String householdId = documentSnapshot.getString("householdId");
                             if (householdId == null) {
-                                // User is not in a household, handle the logic here
-                                // You can prompt the user to join or create a household
+                                // User is not in a household
+                                Intent intent = new Intent(getApplicationContext(), HouseholdActivity.class);
+                                startActivity(intent);
+                                finish();
+                            }
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle errors here
+                    });
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mAuth = FirebaseAuth.getInstance();
+        db = MyApplication.getDbInstance();
+
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            String userId = currentUser.getUid();
+
+            // Perform a query to check if the user is in a household
+            db.collection("users")
+                    .document(userId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String householdId = documentSnapshot.getString("householdId");
+                            if (householdId == null) {
+                                // User is not in a household
+                                Intent intent = new Intent(getApplicationContext(), HouseholdActivity.class);
                             }
                         }
                     })

@@ -30,8 +30,7 @@ public class Household {
         return householdsLiveData;
     }
 
-    public Household(String householdId, String householdName){
-        this.householdId = householdId;
+    public Household(String householdName){
         this.householdName = householdName;
         this.householdUsers = MyApplication.getDbInstance()
                 .collection("households")
@@ -95,23 +94,23 @@ public class Household {
                 });
     }
 
-    public static void createHousehold(String householdId, String householdName, User creatorUser) {
-        Household household = new Household(householdId, householdName);
+    public static void createHousehold(String householdName, User creatorUser) {
+        Household household = new Household(householdName);
 
         // Add creator user to the household
         household.addUser(creatorUser);
 
         db = MyApplication.getDbInstance();
         db.collection("households")
-                .document(household.getHouseholdId())
-                .set(household)
-                .addOnSuccessListener(aVoid -> {
+                .add(household)
+                .addOnSuccessListener(documentReference -> {
                     // Household created successfully
-                    Timber.tag(TAG).d("Household created successfully: %s", household.getHouseholdId());
+                    String householdId = documentReference.getId();
+                    Timber.tag(TAG).d("Household created successfully: %s", householdId);
                 })
                 .addOnFailureListener(e -> {
                     // Handle errors
-                    Timber.tag(TAG).e(e, "Error creating household: %s", household.getHouseholdId());
+                    Timber.tag(TAG).e(e, "Error creating household");
                 });
     }
 

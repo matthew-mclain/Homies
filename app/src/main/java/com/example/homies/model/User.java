@@ -3,6 +3,11 @@ package com.example.homies.model;
 import com.example.homies.MyApplication;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.android.gms.tasks.Tasks;
+
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,25 +40,29 @@ public class User {
         return displayName;
     }
 
-    public static void getUser(String userId) {
+    public static User getUser(String userId) {
         db = MyApplication.getDbInstance();
-        db.collection("users")
-                .document(userId)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        // User data retrieved successfully
-                        Timber.tag(TAG).d("User data retrieved: %s", documentSnapshot.getData());
-                    } else {
-                        // User document does not exist
-                        Timber.tag(TAG).w("User document does not exist for user ID: %s", userId);
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    // Handle errors
-                    Timber.tag(TAG).e(e, "Error getting user data for user ID: %s", userId);
-                });
+        DocumentReference userRef = db.collection("users").document(userId);
+
+        try {
+            DocumentSnapshot documentSnapshot = Tasks.await(userRef.get());
+            if (documentSnapshot.exists()) {
+                // User data retrieved successfully
+                User user = documentSnapshot.toObject(User.class);
+                Timber.tag(TAG).d("User data retrieved: %s", documentSnapshot.getData());
+                return user;
+            } else {
+                // User document does not exist
+                Timber.tag(TAG).w("User document does not exist for user ID: %s", userId);
+                return null;
+            }
+        } catch (Exception e) {
+            // Handle errors
+            Timber.tag(TAG).e(e, "Error getting user data for user ID: %s", userId);
+            return null;
+        }
     }
+
 
     public static void getAllUsers() {
         db = MyApplication.getDbInstance();
