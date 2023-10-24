@@ -17,16 +17,23 @@ public class GroceryList {
         this.householdId = householdId;
     }
 
+    public String getGroceryListId() {
+        return groceryListId;
+    }
+
     public void setGroceryListId(String groceryListId) {
         this.groceryListId = groceryListId;
     }
 
-    public interface OnComponentCreatedListener {
-        void onComponentCreated(String componentId);
-        void onComponentCreationFailed(Exception e);
+    public String getHouseholdId() {
+        return householdId;
     }
 
-    public static void createGroceryList(String householdId, OnComponentCreatedListener listener) {
+    public void setHouseholdId(String householdId) {
+        this.householdId = householdId;
+    }
+
+    public static void createGroceryList(String householdId) {
         GroceryList groceryList = new GroceryList(householdId);
 
         db = MyApplication.getDbInstance();
@@ -37,17 +44,10 @@ public class GroceryList {
                     String groceryListId = documentReference.getId();
                     groceryList.setGroceryListId(groceryListId);
                     Timber.tag(TAG).d("Grocery list created successfully: %s", groceryListId);
-
-                    // Invoke the listener to notify that the group chat has been created,
-                    // and pass the generated groceryListId.
-                    listener.onComponentCreated(groceryListId);
                 })
                 .addOnFailureListener(e -> {
                     // Handle errors
                     Timber.tag(TAG).d("Error creating grocery list");
-
-                    // Invoke the listener to notify about the failure.
-                    listener.onComponentCreationFailed(e);
                 });
     }
 }

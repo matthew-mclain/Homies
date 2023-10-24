@@ -17,16 +17,23 @@ public class LaundryManager {
         this.householdId = householdId;
     }
 
+    public String getLaundryManagerId() {
+        return laundryManagerId;
+    }
+
     public void setLaundryManagerId(String laundryManagerId) {
         this.laundryManagerId = laundryManagerId;
     }
 
-    public interface OnComponentCreatedListener {
-        void onComponentCreated(String componentId);
-        void onComponentCreationFailed(Exception e);
+    public String getHouseholdId() {
+        return householdId;
     }
 
-    public static void createLaundryManager(String householdId, OnComponentCreatedListener listener) {
+    public void setHouseholdId(String householdId) {
+        this.householdId = householdId;
+    }
+
+    public static void createLaundryManager(String householdId) {
         LaundryManager laundryManager = new LaundryManager(householdId);
 
         db = MyApplication.getDbInstance();
@@ -37,17 +44,10 @@ public class LaundryManager {
                     String laundryManagerId = documentReference.getId();
                     laundryManager.setLaundryManagerId(laundryManagerId);
                     Timber.tag(TAG).d("Laundry manager created successfully: %s", laundryManagerId);
-
-                    // Invoke the listener to notify that the group chat has been created,
-                    // and pass the generated laundryManagerId.
-                    listener.onComponentCreated(laundryManagerId);
                 })
                 .addOnFailureListener(e -> {
                     // Handle errors
                     Timber.tag(TAG).d("Error creating laundry manager");
-
-                    // Invoke the listener to notify about the failure.
-                    listener.onComponentCreationFailed(e);
                 });
     }
 }

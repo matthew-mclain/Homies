@@ -97,12 +97,7 @@ public class Household {
                 });
     }
 
-    public interface OnHouseholdCreatedListener {
-        void onHouseholdCreated(String componentId);
-        void onHouseholdCreationFailed(Exception e);
-    }
-
-    public static void createHousehold(String householdName, String userId, OnHouseholdCreatedListener listener) {
+    public static void createHousehold(String householdName, String userId) {
         Household household = new Household(householdName);
 
         db = MyApplication.getDbInstance();
@@ -119,67 +114,18 @@ public class Household {
 
                     Timber.tag(TAG).d("Household created successfully: %s", householdId);
 
-                    // Pass the household ID to the listener
-                    listener.onHouseholdCreated(householdId);
+                    // Create GroupChat, GroceryList, LaundryManager, Calendar
+                    GroupChat.createGroupChat(householdId);
+                    GroceryList.createGroceryList(householdId);
+                    LaundryManager.createLaundryManager(householdId);
+                    Calendar.createCalendar(householdId);
 
-                    // Create GroupChat
-                    GroupChat.createGroupChat(householdId, new GroupChat.OnComponentCreatedListener() {
-                                @Override
-                                public void onComponentCreated(String componentId) {
-                                    // GroupChat created successfully, create GroceryList
-                                    Timber.tag(TAG).d("Component created: %s", componentId);
-                                    GroceryList.createGroceryList(householdId, new GroceryList.OnComponentCreatedListener() {
-                                        @Override
-                                        public void onComponentCreated(String componentId) {
-                                            // GroceryList created successfully, create LaundryManager
-                                            Timber.tag(TAG).d("Component created: %s", componentId);
-                                            LaundryManager.createLaundryManager(householdId, new LaundryManager.OnComponentCreatedListener() {
-                                                @Override
-                                                public void onComponentCreated(String componentId) {
-                                                    // LaundryManager created successfully, create Calendar
-                                                    Timber.tag(TAG).d("Component created: %s", componentId);
-                                                    Calendar.createCalendar(householdId, new Calendar.OnComponentCreatedListener() {
-                                                        @Override
-                                                        public void onComponentCreated(String componentId) {
-                                                            // Calendar created successfully, notify the listener
-                                                            Timber.tag(TAG).d("Component created: %s", componentId);
-                                                        }
-
-                                                        @Override
-                                                        public void onComponentCreationFailed(Exception e) {
-                                                            // Handle errors when creating Calendar
-                                                            Timber.tag(TAG).e(e, "Error creating Calendar");
-                                                        }
-                                                    });
-                                                }
-
-                                                @Override
-                                                public void onComponentCreationFailed(Exception e) {
-                                                    // Handle errors when creating LaundryManager
-                                                    Timber.tag(TAG).e(e, "Error creating LaundryManager");
-                                                }
-                                            });
-                                        }
-
-                                        @Override
-                                        public void onComponentCreationFailed(Exception e) {
-                                            // Handle errors when creating GroceryList
-                                            Timber.tag(TAG).e(e, "Error creating GroceryList");
-                                        }
-                                    });
-                                }
-
-                        @Override
-                                public void onComponentCreationFailed(Exception e) {
-                                    // Handle errors when creating GroupChat
-                                    Timber.tag(TAG).e(e, "Error creating GroupChat");
-                                }
-                    });
                 })
                 .addOnFailureListener(e -> {
-                    // Handle errors
-                    Timber.tag(TAG).e(e, "Error creating household");
-                });
+                        // Handle errors
+                        Timber.tag(TAG).e(e, "Error creating household");
+                    });
+
     }
 
     public static void deleteHousehold(String householdId) {

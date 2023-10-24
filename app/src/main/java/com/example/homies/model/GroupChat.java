@@ -17,16 +17,23 @@ public class GroupChat {
         this.householdId = householdId;
     }
 
+    public String getGroupChatId() {
+        return groupChatId;
+    }
+
     public void setGroupChatId(String groupChatId) {
         this.groupChatId = groupChatId;
     }
 
-    public interface OnComponentCreatedListener {
-        void onComponentCreated(String componentId);
-        void onComponentCreationFailed(Exception e);
+    public String getHouseholdId() {
+        return householdId;
     }
 
-    public static void createGroupChat(String householdId, OnComponentCreatedListener listener) {
+    public void setHouseholdId(String householdId) {
+        this.householdId = householdId;
+    }
+
+    public static void createGroupChat(String householdId) {
         GroupChat groupChat = new GroupChat(householdId);
 
         db = MyApplication.getDbInstance();
@@ -38,17 +45,10 @@ public class GroupChat {
                     groupChat.setGroupChatId(groupChatId);
 
                     Timber.tag(TAG).d("Group chat created successfully: %s", groupChatId);
-
-                    // Invoke the listener to notify that the group chat has been created,
-                    // and pass the generated groupChatId.
-                    listener.onComponentCreated(groupChatId);
                 })
                 .addOnFailureListener(e -> {
                     // Handle errors
                     Timber.tag(TAG).e(e, "Error creating group chat");
-
-                    // Invoke the listener to notify about the failure.
-                    listener.onComponentCreationFailed(e);
                 });
     }
 }

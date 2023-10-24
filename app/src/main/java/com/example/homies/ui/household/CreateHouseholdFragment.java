@@ -62,30 +62,8 @@ public class CreateHouseholdFragment extends Fragment implements View.OnClickLis
             String householdName = String.valueOf(editTextHouseholdName.getText());
 
             if (!TextUtils.isEmpty(householdName) && currentUser != null) {
-                // Create a listener for household creation
-                Household.OnHouseholdCreatedListener listener = new Household.OnHouseholdCreatedListener() {
-                    @Override
-                    public void onHouseholdCreated(String householdId) {
-                        // Handle the case where household and components are successfully created
-                        Timber.tag(TAG).d("Household and components created successfully: %s", householdId);
-
-                        // After creating the household and components, start MainActivity
-                        Intent intent = new Intent(getActivity(), MainActivity.class);
-                        startActivity(intent);
-                        getActivity().finish();
-                    }
-
-                    @Override
-                    public void onHouseholdCreationFailed(Exception e) {
-                        // Handle the case where household or components creation fails
-                        Timber.tag(TAG).e(e, "Error creating household and components");
-                        // Show an error message to the user if needed.
-                    }
-                };
-
-                // Call the method to create a new household with the entered name and pass the listener
                 String userId = currentUser.getUid();
-                Household.createHousehold(householdName, userId, listener);
+                Household.createHousehold(householdName, userId);
             } else {
                     // Handle the case where user data is not available (user not found or error occurred)
                     // You might want to show an error message to the user in this case.

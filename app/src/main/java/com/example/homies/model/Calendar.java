@@ -17,16 +17,24 @@ public class Calendar {
         this.householdId = householdId;
     }
 
+    public String getCalendarId() {
+        return calendarId;
+    }
+
     public void setCalendarId(String calendarId) {
         this.calendarId = calendarId;
     }
 
-    public interface OnComponentCreatedListener {
-        void onComponentCreated(String componentId);
-        void onComponentCreationFailed(Exception e);
+    public String getHouseholdId() {
+        return householdId;
     }
 
-    public static void createCalendar(String householdId, Calendar.OnComponentCreatedListener listener) {
+    public void setHouseholdId(String householdId) {
+        this.householdId = householdId;
+    }
+
+
+    public static void createCalendar(String householdId) {
         Calendar calendar = new Calendar(householdId);
 
         db = MyApplication.getDbInstance();
@@ -37,17 +45,10 @@ public class Calendar {
                     String calendarId = documentReference.getId();
                     calendar.setCalendarId(calendarId);
                     Timber.tag(TAG).d("Calendar created successfully: %s", calendarId);
-
-                    // Invoke the listener to notify that the group chat has been created,
-                    // and pass the generated calendarId.
-                    listener.onComponentCreated(calendarId);
                 })
                 .addOnFailureListener(e -> {
                     // Handle errors
                     Timber.tag(TAG).d("Error creating calendar");
-
-                    // Invoke the listener to notify about the failure.
-                    listener.onComponentCreationFailed(e);
                 });
     }
 }
