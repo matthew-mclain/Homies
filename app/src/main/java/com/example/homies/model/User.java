@@ -21,10 +21,13 @@ public class User {
     private static FirebaseFirestore db;
     private static final String TAG = User.class.getSimpleName();
 
-    public User(String userId, String email, String displayName) {
-        this.userId = userId;
+    public User(String email, String displayName) {
         this.email = email;
         this.displayName = displayName;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     // Getter and setter methods
@@ -40,27 +43,24 @@ public class User {
         return displayName;
     }
 
-    public static User getUser(String userId) {
+    public static void getUser(String userId) {
         db = MyApplication.getDbInstance();
-        DocumentReference userRef = db.collection("users").document(userId);
-
-        try {
-            DocumentSnapshot documentSnapshot = Tasks.await(userRef.get());
-            if (documentSnapshot.exists()) {
-                // User data retrieved successfully
-                User user = documentSnapshot.toObject(User.class);
-                Timber.tag(TAG).d("User data retrieved: %s", documentSnapshot.getData());
-                return user;
-            } else {
-                // User document does not exist
-                Timber.tag(TAG).w("User document does not exist for user ID: %s", userId);
-                return null;
-            }
-        } catch (Exception e) {
-            // Handle errors
-            Timber.tag(TAG).e(e, "Error getting user data for user ID: %s", userId);
-            return null;
-        }
+        db.collection("users")
+                .document(userId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // User data retrieved successfully
+                        Timber.tag(TAG).d("User data retrieved: %s", documentSnapshot.getData());
+                    } else {
+                        // User document does not exist
+                        Timber.tag(TAG).w("User document does not exist for user ID: %s", userId);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // Handle errors
+                    Timber.tag(TAG).e(e, "Error getting user data for user ID: %s", userId);
+                });
     }
 
 
@@ -97,7 +97,7 @@ public class User {
     }
 
     public static void createUser (String userId, String email) {
-        User user = new User(userId, email, null);
+        User user = new User(email, null);
 
         db = MyApplication.getDbInstance();
         db.collection("users")

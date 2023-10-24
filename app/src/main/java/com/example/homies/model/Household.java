@@ -7,9 +7,13 @@ import com.example.homies.MyApplication;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import timber.log.Timber;
 
@@ -18,10 +22,6 @@ public class Household {
     private String householdId;
     private String householdName;
     private CollectionReference householdUsers;
-    private GroupChat groupChat;
-    private GroceryList groceryList;
-    private LaundryManager laundryManager;
-    private Calendar calendar;
     private static FirebaseFirestore db;
     private static final String TAG = User.class.getSimpleName();
     private static final MutableLiveData<List<Household>> householdsLiveData = new MutableLiveData<>();
@@ -32,15 +32,18 @@ public class Household {
 
     public Household(String householdName){
         this.householdName = householdName;
+    }
+
+    // Setter for householdId
+    public void setHouseholdId(String householdId) {
+        this.householdId = householdId;
+    }
+
+    public void setHouseholdUsers(String householdId) {
         this.householdUsers = MyApplication.getDbInstance()
                 .collection("households")
                 .document(householdId)
                 .collection("users");
-
-        this.groupChat = new GroupChat();
-        this.groceryList = new GroceryList();
-        this.laundryManager = new LaundryManager();
-        this.calendar = new Calendar();
     }
 
     public String getHouseholdId() {
@@ -94,11 +97,13 @@ public class Household {
                 });
     }
 
-    public static void createHousehold(String householdName, User creatorUser) {
-        Household household = new Household(householdName);
+    public interface OnHouseholdCreatedListener {
+        void onHouseholdCreated(String componentId);
+        void onHouseholdCreationFailed(Exception e);
+    }
 
-        // Add creator user to the household
-        household.addUser(creatorUser);
+    public static void createHousehold(String householdName, String userId, OnHouseholdCreatedListener listener) {
+        Household household = new Household(householdName);
 
         db = MyApplication.getDbInstance();
         db.collection("households")
@@ -106,7 +111,70 @@ public class Household {
                 .addOnSuccessListener(documentReference -> {
                     // Household created successfully
                     String householdId = documentReference.getId();
+                    household.setHouseholdId(householdId);
+
+                    // Add creator user to the household
+                    household.addUser(householdId, userId);
+                    household.setHouseholdUsers(householdId);
+
                     Timber.tag(TAG).d("Household created successfully: %s", householdId);
+
+                    // Pass the household ID to the listener
+                    listener.onHouseholdCreated(householdId);
+
+                    // Create GroupChat
+                    GroupChat.createGroupChat(householdId, new GroupChat.OnComponentCreatedListener() {
+                                @Override
+                                public void onComponentCreated(String componentId) {
+                                    // GroupChat created successfully, create GroceryList
+                                    Timber.tag(TAG).d("Component created: %s", componentId);
+                                    GroceryList.createGroceryList(householdId, new GroceryList.OnComponentCreatedListener() {
+                                        @Override
+                                        public void onComponentCreated(String componentId) {
+                                            // GroceryList created successfully, create LaundryManager
+                                            Timber.tag(TAG).d("Component created: %s", componentId);
+                                            LaundryManager.createLaundryManager(householdId, new LaundryManager.OnComponentCreatedListener() {
+                                                @Override
+                                                public void onComponentCreated(String componentId) {
+                                                    // LaundryManager created successfully, create Calendar
+                                                    Timber.tag(TAG).d("Component created: %s", componentId);
+                                                    Calendar.createCalendar(householdId, new Calendar.OnComponentCreatedListener() {
+                                                        @Override
+                                                        public void onComponentCreated(String componentId) {
+                                                            // Calendar created successfully, notify the listener
+                                                            Timber.tag(TAG).d("Component created: %s", componentId);
+                                                        }
+
+                                                        @Override
+                                                        public void onComponentCreationFailed(Exception e) {
+                                                            // Handle errors when creating Calendar
+                                                            Timber.tag(TAG).e(e, "Error creating Calendar");
+                                                        }
+                                                    });
+                                                }
+
+                                                @Override
+                                                public void onComponentCreationFailed(Exception e) {
+                                                    // Handle errors when creating LaundryManager
+                                                    Timber.tag(TAG).e(e, "Error creating LaundryManager");
+                                                }
+                                            });
+                                        }
+
+                                        @Override
+                                        public void onComponentCreationFailed(Exception e) {
+                                            // Handle errors when creating GroceryList
+                                            Timber.tag(TAG).e(e, "Error creating GroceryList");
+                                        }
+                                    });
+                                }
+
+                        @Override
+                                public void onComponentCreationFailed(Exception e) {
+                                    // Handle errors when creating GroupChat
+                                    Timber.tag(TAG).e(e, "Error creating GroupChat");
+                                }
+                    });
                 })
                 .addOnFailureListener(e -> {
                     // Handle errors
@@ -134,16 +202,23 @@ public class Household {
     }
 
     // Method to add a new user to the household
-    public void addUser(User user) {
-        householdUsers.document(user.getUserId())
-                .set(user)
+    public void addUser(String householdId, String userId) {
+        db = MyApplication.getDbInstance();
+        Map<String, Object> userMap = new HashMap<>();
+        userMap.put("userId", userId);
+
+        db.collection("households")
+                .document(householdId)
+                .collection("users")
+                .document(userId) // Use userId as the document ID in the subcollection
+                .set(userMap)
                 .addOnSuccessListener(aVoid -> {
-                    // User added to household successfully
-                    Timber.tag(TAG).d("User added to household: %s", user.getUserId());
+                    // User added to the household successfully
+                    Timber.tag(TAG).d("User added to household %s: %s", householdId, userId);
                 })
                 .addOnFailureListener(e -> {
                     // Handle errors
-                    Timber.tag(TAG).e(e, "Error adding user to household: %s", user.getUserId());
+                    Timber.tag(TAG).e(e, "Error adding user to household %s: %s", householdId, userId);
                 });
     }
 

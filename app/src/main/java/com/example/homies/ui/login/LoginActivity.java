@@ -8,9 +8,15 @@ import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.homies.MainActivity;
+import com.example.homies.MyApplication;
 import com.example.homies.R;
+import com.example.homies.ui.household.HouseholdActivity;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import timber.log.Timber;
 
@@ -18,6 +24,7 @@ import timber.log.Timber;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
     FirebaseAuth mAuth;
+    private FirebaseFirestore db;
     private final String TAG = getClass().getSimpleName();
 
     @Override
@@ -42,9 +49,53 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if(currentUser != null){
-            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-            startActivity(intent);
-            finish();
+            userIsInHousehold(new OnCheckHouseholdListener() {
+                @Override
+                public void onCheckHousehold(boolean isInHousehold) {
+                    Intent intent;
+                    if (isInHousehold) {
+                        intent = new Intent(getApplicationContext(), MainActivity.class);
+                    } else {
+                        intent = new Intent(getApplicationContext(), HouseholdActivity.class);
+                    }
+                    startActivity(intent);
+                    finish();
+                }
+            });
+        }
+    }
+
+    public interface OnCheckHouseholdListener {
+        void onCheckHousehold(boolean isInHousehold);
+    }
+
+    private void userIsInHousehold(OnCheckHouseholdListener listener) {
+        mAuth = FirebaseAuth.getInstance();
+        db = MyApplication.getDbInstance();
+
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            String userId = currentUser.getUid();
+
+            // Perform a query to check if the user is in a household
+            db.collection("users")
+                    .document(userId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String householdId = documentSnapshot.getString("householdId");
+                            boolean isInHousehold = householdId != null;
+                            listener.onCheckHousehold(isInHousehold);
+                        } else {
+                            listener.onCheckHousehold(false);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle errors here
+                        listener.onCheckHousehold(false);
+                    });
+        } else {
+            listener.onCheckHousehold(false);
         }
     }
 

@@ -1,6 +1,5 @@
 package com.example.homies.ui.household;
 
-import static com.example.homies.model.User.getUser;
 
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -9,16 +8,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-
+import android.content.Intent;
 import androidx.fragment.app.Fragment;
 
+import com.example.homies.MainActivity;
 import com.example.homies.R;
 import com.example.homies.model.Household;
-import com.example.homies.model.User;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import java.util.Objects;
 
 import timber.log.Timber;
 
@@ -26,7 +25,8 @@ public class CreateHouseholdFragment extends Fragment implements View.OnClickLis
     HouseholdActivity householdActivity;
     View view;
     private EditText editTextHouseholdName;
-    private Button buttonSubmit;
+    private Button buttonCreate;
+    private Button buttonBack;
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private final String TAG = getClass().getSimpleName();
@@ -45,28 +45,47 @@ public class CreateHouseholdFragment extends Fragment implements View.OnClickLis
         currentUser = mAuth.getCurrentUser();
 
         editTextHouseholdName = view.findViewById(R.id.editTextHouseholdName);
-        buttonSubmit = view.findViewById(R.id.buttonCreate);
-        buttonSubmit.setOnClickListener(this);
 
+        buttonCreate = view.findViewById(R.id.buttonCreate);
+        buttonBack = view.findViewById(R.id.buttonBack);
+        buttonCreate.setOnClickListener(this);
+        buttonBack.setOnClickListener(this);
 
         return view;
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(View view) {
         Timber.tag(TAG).d("onClick()");
 
         if (view.getId() == R.id.buttonCreate) {
             String householdName = String.valueOf(editTextHouseholdName.getText());
 
             if (!TextUtils.isEmpty(householdName) && currentUser != null) {
-                // Call the method to create a new household with the entered name
+                // Create a listener for household creation
+                Household.OnHouseholdCreatedListener listener = new Household.OnHouseholdCreatedListener() {
+                    @Override
+                    public void onHouseholdCreated(String householdId) {
+                        // Handle the case where household and components are successfully created
+                        Timber.tag(TAG).d("Household and components created successfully: %s", householdId);
+
+                        // After creating the household and components, start MainActivity
+                        Intent intent = new Intent(getActivity(), MainActivity.class);
+                        startActivity(intent);
+                        getActivity().finish();
+                    }
+
+                    @Override
+                    public void onHouseholdCreationFailed(Exception e) {
+                        // Handle the case where household or components creation fails
+                        Timber.tag(TAG).e(e, "Error creating household and components");
+                        // Show an error message to the user if needed.
+                    }
+                };
+
+                // Call the method to create a new household with the entered name and pass the listener
                 String userId = currentUser.getUid();
-                User user = getUser(userId);
-
-                Household.createHousehold(householdName, user);
-                requireActivity().finish();
-
+                Household.createHousehold(householdName, userId, listener);
             } else {
                     // Handle the case where user data is not available (user not found or error occurred)
                     // You might want to show an error message to the user in this case.
