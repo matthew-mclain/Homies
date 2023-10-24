@@ -17,14 +17,6 @@ public class GroupChat {
         this.householdId = householdId;
     }
 
-    public String getGroupChatId() {
-        return groupChatId;
-    }
-
-    public void setGroupChatId(String groupChatId) {
-        this.groupChatId = groupChatId;
-    }
-
     public String getHouseholdId() {
         return householdId;
     }
@@ -40,11 +32,7 @@ public class GroupChat {
         db.collection("group_chats")
                 .add(groupChat)
                 .addOnSuccessListener(documentReference -> {
-                    // Household created successfully
-                    String groupChatId = documentReference.getId();
-                    groupChat.setGroupChatId(groupChatId);
-
-                    Timber.tag(TAG).d("Group chat created successfully: %s", groupChatId);
+                    Timber.tag(TAG).d("Group chat created successfully: %s", documentReference.getId());
                 })
                 .addOnFailureListener(e -> {
                     // Handle errors

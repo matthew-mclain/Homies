@@ -17,14 +17,6 @@ public class LaundryManager {
         this.householdId = householdId;
     }
 
-    public String getLaundryManagerId() {
-        return laundryManagerId;
-    }
-
-    public void setLaundryManagerId(String laundryManagerId) {
-        this.laundryManagerId = laundryManagerId;
-    }
-
     public String getHouseholdId() {
         return householdId;
     }
@@ -40,10 +32,7 @@ public class LaundryManager {
         db.collection("laundry_managers")
                 .add(laundryManager)
                 .addOnSuccessListener(documentReference -> {
-                    // Laundry manager created successfully, obtain its ID
-                    String laundryManagerId = documentReference.getId();
-                    laundryManager.setLaundryManagerId(laundryManagerId);
-                    Timber.tag(TAG).d("Laundry manager created successfully: %s", laundryManagerId);
+                    Timber.tag(TAG).d("Laundry manager created successfully: %s", documentReference.getId());
                 })
                 .addOnFailureListener(e -> {
                     // Handle errors

@@ -106,7 +106,6 @@ public class Household {
                 .addOnSuccessListener(documentReference -> {
                     // Household created successfully
                     String householdId = documentReference.getId();
-                    household.setHouseholdId(householdId);
 
                     // Add creator user to the household
                     household.addUser(householdId, userId);

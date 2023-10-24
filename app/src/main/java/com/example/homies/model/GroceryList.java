@@ -17,14 +17,6 @@ public class GroceryList {
         this.householdId = householdId;
     }
 
-    public String getGroceryListId() {
-        return groceryListId;
-    }
-
-    public void setGroceryListId(String groceryListId) {
-        this.groceryListId = groceryListId;
-    }
-
     public String getHouseholdId() {
         return householdId;
     }
@@ -40,10 +32,7 @@ public class GroceryList {
         db.collection("grocery_lists")
                 .add(groceryList)
                 .addOnSuccessListener(documentReference -> {
-                    // Grocery list created successfully, obtain its ID
-                    String groceryListId = documentReference.getId();
-                    groceryList.setGroceryListId(groceryListId);
-                    Timber.tag(TAG).d("Grocery list created successfully: %s", groceryListId);
+                    Timber.tag(TAG).d("Grocery list created successfully: %s", documentReference.getId());
                 })
                 .addOnFailureListener(e -> {
                     // Handle errors

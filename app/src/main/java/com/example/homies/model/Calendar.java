@@ -17,14 +17,6 @@ public class Calendar {
         this.householdId = householdId;
     }
 
-    public String getCalendarId() {
-        return calendarId;
-    }
-
-    public void setCalendarId(String calendarId) {
-        this.calendarId = calendarId;
-    }
-
     public String getHouseholdId() {
         return householdId;
     }
@@ -41,10 +33,7 @@ public class Calendar {
         db.collection("calendars")
                 .add(calendar)
                 .addOnSuccessListener(documentReference -> {
-                    // Calendar created successfully, obtain its ID
-                    String calendarId = documentReference.getId();
-                    calendar.setCalendarId(calendarId);
-                    Timber.tag(TAG).d("Calendar created successfully: %s", calendarId);
+                    Timber.tag(TAG).d("Calendar created successfully: %s", documentReference.getId());
                 })
                 .addOnFailureListener(e -> {
                     // Handle errors
