@@ -13,6 +13,9 @@ public class GroceryList {
     private static FirebaseFirestore db;
     private static final String TAG = User.class.getSimpleName();
 
+    public GroceryList() {
+    }
+
     public GroceryList(String householdId) {
         this.householdId = householdId;
     }

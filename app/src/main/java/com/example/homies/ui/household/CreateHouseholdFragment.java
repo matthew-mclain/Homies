@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.content.Intent;
+import android.widget.Toast;
+
 import androidx.fragment.app.Fragment;
 
 import com.example.homies.MainActivity;
@@ -61,12 +63,14 @@ public class CreateHouseholdFragment extends Fragment implements View.OnClickLis
         if (view.getId() == R.id.buttonCreate) {
             String householdName = String.valueOf(editTextHouseholdName.getText());
 
-            if (!TextUtils.isEmpty(householdName) && currentUser != null) {
+            if (!TextUtils.isEmpty(householdName)) {
                 String userId = currentUser.getUid();
                 Household.createHousehold(householdName, userId);
+
+                Intent intent = new Intent(getActivity(), MainActivity.class);
+                startActivity(intent);
             } else {
-                    // Handle the case where user data is not available (user not found or error occurred)
-                    // You might want to show an error message to the user in this case.
+                Toast.makeText(getActivity(), "Error: Household name is empty.", Toast.LENGTH_SHORT).show();
             }
         }
         else if (view.getId() == R.id.buttonBack) {

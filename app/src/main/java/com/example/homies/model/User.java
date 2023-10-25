@@ -21,6 +21,9 @@ public class User {
     private static FirebaseFirestore db;
     private static final String TAG = User.class.getSimpleName();
 
+    public User() {
+    }
+
     public User(String email, String displayName) {
         this.email = email;
         this.displayName = displayName;
@@ -28,6 +31,19 @@ public class User {
 
     public void setUserId(String userId) {
         this.userId = userId;
+
+        // Update the userId in Firestore
+        db.collection("users")
+                .document(userId)
+                .update("userId", userId)
+                .addOnSuccessListener(aVoid -> {
+                    // UserId updated successfully in Firestore
+                    Timber.tag(TAG).d("UserId updated successfully in Firestore: %s", userId);
+                })
+                .addOnFailureListener(e -> {
+                    // Handle errors
+                    Timber.tag(TAG).e(e, "Error updating userId in Firestore: %s", userId);
+                });
     }
 
     // Getter and setter methods
@@ -89,6 +105,9 @@ public class User {
                 .addOnSuccessListener(aVoid -> {
                     // Display name updated successfully
                     Timber.tag(TAG).d("Display name updated to: %s", displayName);
+
+                    // Update the local displayName attribute
+                    this.displayName = displayName;
                 })
                 .addOnFailureListener(e -> {
                     // Handle errors
@@ -106,6 +125,9 @@ public class User {
                 .addOnSuccessListener(aVoid -> {
                     // User created successfully
                     Timber.tag(TAG).d("User created successfully for user ID: %s", userId);
+
+                    // Update the local userId attribute
+                    user.setUserId(userId);
                 })
                 .addOnFailureListener(e -> {
                     // Handle errors

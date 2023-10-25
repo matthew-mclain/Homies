@@ -13,6 +13,9 @@ public class Calendar {
     private static FirebaseFirestore db;
     private static final String TAG = User.class.getSimpleName();
 
+    public Calendar() {
+    }
+
     public Calendar(String householdId) {
         this.householdId = householdId;
     }

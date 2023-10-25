@@ -9,6 +9,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.SetOptions;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +22,7 @@ public class Household {
 
     private String householdId;
     private String householdName;
-    private CollectionReference householdUsers;
+    private ArrayList<String> householdUsers;
     private static FirebaseFirestore db;
     private static final String TAG = User.class.getSimpleName();
     private static final MutableLiveData<List<Household>> householdsLiveData = new MutableLiveData<>();
@@ -30,34 +31,38 @@ public class Household {
         return householdsLiveData;
     }
 
+    public Household() {
+    }
+
     public Household(String householdName){
         this.householdName = householdName;
-    }
-
-    // Setter for householdId
-    public void setHouseholdId(String householdId) {
-        this.householdId = householdId;
-    }
-
-    public void setHouseholdUsers(String householdId) {
-        this.householdUsers = MyApplication.getDbInstance()
-                .collection("households")
-                .document(householdId)
-                .collection("users");
+        this.householdUsers = new ArrayList<>();
     }
 
     public String getHouseholdId() {
         return householdId;
     }
 
+    public void setHouseholdId(String householdId) {
+        this.householdId = householdId;
+    }
+
     public String getHouseholdName() {
         return householdName;
     }
 
-    // Method to get the collection of users associated with this household
-    public CollectionReference getUsersCollection() {
+    public void setHouseholdName(String householdName) {
+        this.householdName = householdName;
+    }
+
+    public ArrayList<String> getHouseholdUsers() {
         return householdUsers;
     }
+
+    public void setHouseholdUsers(ArrayList<String> householdUsers) {
+        this.householdUsers = householdUsers;
+    }
+
 
     public static void getHousehold(String householdId) {
         db = MyApplication.getDbInstance();
@@ -106,12 +111,11 @@ public class Household {
                 .addOnSuccessListener(documentReference -> {
                     // Household created successfully
                     String householdId = documentReference.getId();
+                    household.setHouseholdId(householdId);
 
-                    // Add creator user to the household
-                    household.addUser(householdId, userId);
-                    household.setHouseholdUsers(householdId);
-
-                    Timber.tag(TAG).d("Household created successfully: %s", householdId);
+                    // Add user to the household
+                    household.addUser(userId);
+                    household.updateHouseholdInFirestore();
 
                     // Create GroupChat, GroceryList, LaundryManager, Calendar
                     GroupChat.createGroupChat(householdId);
@@ -146,37 +150,53 @@ public class Household {
         //TODO
     }
 
-    // Method to add a new user to the household
-    public void addUser(String householdId, String userId) {
-        db = MyApplication.getDbInstance();
-        Map<String, Object> userMap = new HashMap<>();
-        userMap.put("userId", userId);
-
-        db.collection("households")
-                .document(householdId)
-                .collection("users")
-                .document(userId) // Use userId as the document ID in the subcollection
-                .set(userMap)
-                .addOnSuccessListener(aVoid -> {
-                    // User added to the household successfully
-                    Timber.tag(TAG).d("User added to household %s: %s", householdId, userId);
-                })
-                .addOnFailureListener(e -> {
-                    // Handle errors
-                    Timber.tag(TAG).e(e, "Error adding user to household %s: %s", householdId, userId);
-                });
+    public void addUser(String userId) {
+        if (!householdUsers.contains(userId)) {
+            householdUsers.add(userId);
+            updateUsersInFirestore();
+        }
     }
 
     // Method to remove a user from the household
     public void removeUser(String userId) {
-        householdUsers.document(userId).delete()
+        householdUsers.remove(userId);
+        updateUsersInFirestore();
+    }
+
+    private void updateUsersInFirestore() {
+        // Convert ArrayList to a Map where keys are user IDs and values are true
+        Map<String, Boolean> userMap = new HashMap<>();
+        for (String userId : householdUsers) {
+            userMap.put(userId, true);
+        }
+
+        // Update the "users" subcollection in Firestore with the updated user list (as a Map)
+        db.collection("households")
+                .document(householdId)
+                .collection("users")
+                .document("userListDocument")
+                .set(userMap)
                 .addOnSuccessListener(aVoid -> {
-                    // User removed from household successfully
-                    Timber.tag(TAG).d("User removed from household: %s", userId);
+                    // User list updated in Firestore successfully
+                    Timber.tag(TAG).d("User list updated in Firestore for household: %s", householdId);
                 })
                 .addOnFailureListener(e -> {
                     // Handle errors
-                    Timber.tag(TAG).e(e, "Error removing user from household: %s", userId);
+                    Timber.tag(TAG).e(e, "Error updating user list in Firestore for household: %s", householdId);
+                });
+    }
+
+    private void updateHouseholdInFirestore() {
+        db.collection("households")
+                .document(householdId)
+                .set(this)
+                .addOnSuccessListener(aVoid -> {
+                    // Household data updated in Firestore successfully
+                    Timber.tag(TAG).d("Household data updated in Firestore for ID: %s", householdId);
+                })
+                .addOnFailureListener(e -> {
+                    // Handle errors
+                    Timber.tag(TAG).e(e, "Error updating household data in Firestore for ID: %s", householdId);
                 });
     }
 }

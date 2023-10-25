@@ -29,8 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     public DrawerLayout drawerLayout;
     public ActionBarDrawerToggle actionBarDrawerToggle;
-    private FirebaseAuth mAuth;
-    private FirebaseFirestore db;
+
     private LiveData<List<Household>> householdsLiveData;
 
 
@@ -58,66 +57,6 @@ public class MainActivity extends AppCompatActivity {
         actionBarDrawerToggle.syncState();
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mAuth = FirebaseAuth.getInstance();
-        db = MyApplication.getDbInstance();
-
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            String userId = currentUser.getUid();
-
-            // Perform a query to check if the user is in a household
-            db.collection("users")
-                    .document(userId)
-                    .get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            String householdId = documentSnapshot.getString("householdId");
-                            if (householdId == null) {
-                                // User is not in a household
-                                Intent intent = new Intent(getApplicationContext(), HouseholdActivity.class);
-                                startActivity(intent);
-                                finish();
-                            }
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        // Handle errors here
-                    });
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mAuth = FirebaseAuth.getInstance();
-        db = MyApplication.getDbInstance();
-
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            String userId = currentUser.getUid();
-
-            // Perform a query to check if the user is in a household
-            db.collection("users")
-                    .document(userId)
-                    .get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            String householdId = documentSnapshot.getString("householdId");
-                            if (householdId == null) {
-                                // User is not in a household
-                                Intent intent = new Intent(getApplicationContext(), HouseholdActivity.class);
-                            }
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        // Handle errors here
-                    });
-        }
     }
 
     // override the onOptionsItemSelected()

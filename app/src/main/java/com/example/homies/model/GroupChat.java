@@ -13,6 +13,9 @@ public class GroupChat {
     private static FirebaseFirestore db;
     private static final String TAG = User.class.getSimpleName();
 
+    public GroupChat() {
+    }
+
     public GroupChat(String householdId) {
         this.householdId = householdId;
     }

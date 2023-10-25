@@ -24,7 +24,6 @@ import timber.log.Timber;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
     FirebaseAuth mAuth;
-    private FirebaseFirestore db;
     private final String TAG = getClass().getSimpleName();
 
     @Override
@@ -39,64 +38,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         signInButton.setOnClickListener(this);
         signUpButton.setOnClickListener(this);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Timber.tag(TAG).d("onStart()");
-
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null){
-            userIsInHousehold(new OnCheckHouseholdListener() {
-                @Override
-                public void onCheckHousehold(boolean isInHousehold) {
-                    Intent intent;
-                    if (isInHousehold) {
-                        intent = new Intent(getApplicationContext(), MainActivity.class);
-                    } else {
-                        intent = new Intent(getApplicationContext(), HouseholdActivity.class);
-                    }
-                    startActivity(intent);
-                    finish();
-                }
-            });
-        }
-    }
-
-    public interface OnCheckHouseholdListener {
-        void onCheckHousehold(boolean isInHousehold);
-    }
-
-    private void userIsInHousehold(OnCheckHouseholdListener listener) {
-        mAuth = FirebaseAuth.getInstance();
-        db = MyApplication.getDbInstance();
-
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            String userId = currentUser.getUid();
-
-            // Perform a query to check if the user is in a household
-            db.collection("users")
-                    .document(userId)
-                    .get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            String householdId = documentSnapshot.getString("householdId");
-                            boolean isInHousehold = householdId != null;
-                            listener.onCheckHousehold(isInHousehold);
-                        } else {
-                            listener.onCheckHousehold(false);
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        // Handle errors here
-                        listener.onCheckHousehold(false);
-                    });
-        } else {
-            listener.onCheckHousehold(false);
-        }
     }
 
     @Override
