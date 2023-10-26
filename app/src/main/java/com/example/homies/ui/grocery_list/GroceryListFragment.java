@@ -97,26 +97,26 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
         if (view.getId() == R.id.addButton) {
             Timber.tag(TAG).d("add");
             String itemName = String.valueOf(itemET.getText());
-            GroceryList g = new GroceryList("123");
-            GroceryItem.createGroceryItem(g.getGroceryListId(), itemName);
-            g.createGroceryList("123", "123");
+            //GroceryList g = new GroceryList("123");
+            //GroceryItem.createGroceryItem(g.getGroceryListId(), itemName);
+            //g.createGroceryList("123", "123");
         }
         if (view.getId() == R.id.deleteButton) {
             Timber.tag(TAG).d("delete");
             String itemName = String.valueOf(itemDeleteET.getText());
-            GroceryList g = new GroceryList("123");
+            //GroceryList g = new GroceryList("123");
 //            GroceryItem item = new GroceryItem(itemName, g.getGroceryListId());
-            GroceryItem.deleteGroceryItem(g.getGroceryListId(), itemName);
+            //GroceryItem.deleteGroceryItem(g.getGroceryListId(), itemName);
         }
 
         if (view.getId() == R.id.updateButton) {
             Timber.tag(TAG).d("update");
             String oldItem = String.valueOf(itemOldET.getText());
             String newItem = String.valueOf(itemNewET.getText());
-            String groceryListId = "123";
-            GroceryList g = new GroceryList("123");
+            //String groceryListId = "123";
+            //GroceryList g = new GroceryList("123");
 //            GroceryItem item = new GroceryItem(oldItem, g.getHouseholdId());
-            GroceryItem.updateGroceryItem(oldItem, newItem, g.getGroceryListId());
+            //GroceryItem.updateGroceryItem(oldItem, newItem, g.getGroceryListId());
         }
 
 //        private void initializeListView() {

@@ -20,14 +20,11 @@
     <string name="join_household">Join Household</string>
     <string name="create_household">Create Household</string>
     <string name="sign_out">Sign Out</string>
-<<<<<<< HEAD
     <string name="add">Add</string>
     <string name="enter_machine_name">Enter Machine Name</string>
     <string name="machine_name_input">Machine Name Input</string>
-=======
     <string name="create_or_join_a_household">Create or Join a Household</string>
     <string name="create">Create</string>
     <string name="household_name">Household Name</string>
     <string name="join">Join</string>
->>>>>>> household_activity_setup
 </resources>
