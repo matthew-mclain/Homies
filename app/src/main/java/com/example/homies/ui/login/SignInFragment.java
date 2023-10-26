@@ -14,12 +14,15 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.example.homies.MainActivity;
+import com.example.homies.MyApplication;
 import com.example.homies.R;
+import com.example.homies.ui.household.HouseholdActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import timber.log.Timber;
 
@@ -31,6 +34,7 @@ public class SignInFragment extends Fragment implements View.OnClickListener{
     LoginActivity loginActivity;
     View view;
     FirebaseAuth mAuth;
+    private static FirebaseFirestore db;
     private final String TAG = getClass().getSimpleName();
 
     public SignInFragment(LoginActivity loginActivity) {
@@ -82,9 +86,28 @@ public class SignInFragment extends Fragment implements View.OnClickListener{
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
-                                // Sign in success, update UI with the signed-in user's information
-                                Intent intent = new Intent(getActivity(), MainActivity.class);
-                                startActivity(intent);
+                                // User signed in successfully, check if they are in a household
+                                String userId = mAuth.getCurrentUser().getUid();
+                                db = MyApplication.getDbInstance();
+                                db.collection("households")
+                                        .whereArrayContains("householdUsers", userId)
+                                        .get()
+                                        .addOnSuccessListener(querySnapshot -> {
+                                            if (!querySnapshot.isEmpty()) {
+                                                // User is in a household, launch MainActivity
+                                                Intent intent = new Intent(getActivity(), MainActivity.class);
+                                                startActivity(intent);
+                                            } else {
+                                                // User is not in any household, launch HouseholdActivity
+                                                Intent intent = new Intent(getActivity(), HouseholdActivity.class);
+                                                startActivity(intent);
+                                            }
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            // Handle errors
+                                            SignInErrorDialogFragment dialog = new SignInErrorDialogFragment(1);
+                                            dialog.show(manager, "SignInError");
+                                        });
                             } else {
                                 // If sign in fails, display a message to the user.
                                 SignInErrorDialogFragment dialog = new SignInErrorDialogFragment(1);

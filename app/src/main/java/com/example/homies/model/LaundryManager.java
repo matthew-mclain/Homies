@@ -7,15 +7,15 @@ import java.util.UUID;
 
 import timber.log.Timber;
 
-public class GroupChat {
+public class LaundryManager {
     private String householdId;
     private static FirebaseFirestore db;
     private static final String TAG = User.class.getSimpleName();
 
-    public GroupChat() {
+    public LaundryManager() {
     }
 
-    public GroupChat(String householdId) {
+    public LaundryManager(String householdId) {
         this.householdId = householdId;
     }
 
@@ -27,18 +27,18 @@ public class GroupChat {
         this.householdId = householdId;
     }
 
-    public static void createGroupChat(String householdId) {
-        GroupChat groupChat = new GroupChat(householdId);
+    public static void createLaundryManager(String householdId) {
+        LaundryManager laundryManager = new LaundryManager(householdId);
 
         db = MyApplication.getDbInstance();
-        db.collection("group_chats")
-                .add(groupChat)
+        db.collection("laundry_managers")
+                .add(laundryManager)
                 .addOnSuccessListener(documentReference -> {
-                    Timber.tag(TAG).d("Group chat created successfully: %s", documentReference.getId());
+                    Timber.tag(TAG).d("Laundry manager created successfully: %s", documentReference.getId());
                 })
                 .addOnFailureListener(e -> {
                     // Handle errors
-                    Timber.tag(TAG).e(e, "Error creating group chat");
+                    Timber.tag(TAG).d("Error creating laundry manager");
                 });
     }
 }

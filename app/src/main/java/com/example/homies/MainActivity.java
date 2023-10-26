@@ -1,12 +1,17 @@
 package com.example.homies;
 
+import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.example.homies.databinding.ActivityMainBinding;
 import com.example.homies.model.Household;
+import com.example.homies.ui.household.HouseholdActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     public DrawerLayout drawerLayout;
     public ActionBarDrawerToggle actionBarDrawerToggle;
+
     private LiveData<List<Household>> householdsLiveData;
 
 

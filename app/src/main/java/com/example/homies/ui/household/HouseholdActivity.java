@@ -1,41 +1,32 @@
-package com.example.homies.ui.login;
+package com.example.homies.ui.household;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
-import com.example.homies.MainActivity;
-import com.example.homies.MyApplication;
+
 import com.example.homies.R;
-import com.example.homies.ui.household.HouseholdActivity;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
+import com.example.homies.ui.login.SignInFragment;
+import com.example.homies.ui.login.SignUpFragment;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import timber.log.Timber;
 
-
-
-public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
+public class HouseholdActivity extends AppCompatActivity implements View.OnClickListener {
     FirebaseAuth mAuth;
     private final String TAG = getClass().getSimpleName();
 
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
-        FirebaseAuth.getInstance().signOut();
         super.onCreate(savedInstanceState);
         Timber.tag(TAG).d("onCreate()");
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_household);
         mAuth = FirebaseAuth.getInstance();
-        // Set a single onClick listener for both sign-in and sign-up buttons
-        Button signInButton = findViewById(R.id.buttonSignIn);
-        Button signUpButton = findViewById(R.id.buttonSignUp);
+
+        // Set a single onClick listener for both create and join buttons
+        Button signInButton = findViewById(R.id.buttonCreateHousehold);
+        Button signUpButton = findViewById(R.id.buttonJoinHousehold);
 
         signInButton.setOnClickListener(this);
         signUpButton.setOnClickListener(this);
@@ -43,53 +34,53 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onClick(View v) {
-        Button signInButton = findViewById(R.id.buttonSignIn);
-        Button signUpButton = findViewById(R.id.buttonSignUp);
+        Button createHouseholdButton = findViewById(R.id.buttonCreateHousehold);
+        Button buttonJoinHousehold = findViewById(R.id.buttonJoinHousehold);
 
-        signInButton.setVisibility(View.GONE);
-        signUpButton.setVisibility(View.GONE);
+        createHouseholdButton.setVisibility(View.GONE);
+        buttonJoinHousehold.setVisibility(View.GONE);
 
-        if (v.getId() == R.id.buttonSignIn) {
-            showSignInFragment();
-        } else if (v.getId() == R.id.buttonSignUp) {
-            showSignUpFragment();
+        if (v.getId() == R.id.buttonCreateHousehold) {
+            showCreateHouseholdFragment();
+        } else if (v.getId() == R.id.buttonJoinHousehold) {
+            showJoinHouseholdFragment();
         }
     }
 
     // Method to switch to SignUpFragment
-    public void showSignUpFragment() {
+    public void showCreateHouseholdFragment() {
         hideButtons();
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, new SignUpFragment(this))
+                .replace(R.id.fragment_container, new CreateHouseholdFragment(this))
                 .addToBackStack(null)
                 .commit();
     }
 
     // Method to switch to SignInFragment
-    public void showSignInFragment() {
+    public void showJoinHouseholdFragment() {
         hideButtons();
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, new SignInFragment(this))
+                .replace(R.id.fragment_container, new JoinHouseholdFragment(this))
                 .addToBackStack(null)
                 .commit();
     }
 
     // Method to hide the buttons
     private void hideButtons() {
-        Button signInButton = findViewById(R.id.buttonSignIn);
-        Button signUpButton = findViewById(R.id.buttonSignUp);
-        signInButton.setVisibility(View.GONE);
-        signUpButton.setVisibility(View.GONE);
+        Button createHouseholdButton = findViewById(R.id.buttonCreateHousehold);
+        Button joinHouseholdButton = findViewById(R.id.buttonJoinHousehold);
+        createHouseholdButton.setVisibility(View.GONE);
+        joinHouseholdButton.setVisibility(View.GONE);
     }
 
     // Method to show the buttons
     public void showButtons(View viewToRemove) {
         LinearLayout fragmentContainer = findViewById(R.id.fragment_container);
         fragmentContainer.removeView(viewToRemove);
-        Button signInButton = findViewById(R.id.buttonSignIn);
-        Button signUpButton = findViewById(R.id.buttonSignUp);
-        signInButton.setVisibility(View.VISIBLE);
-        signUpButton.setVisibility(View.VISIBLE);
+        Button createHouseholdButton = findViewById(R.id.buttonCreateHousehold);
+        Button joinHouseholdButton = findViewById(R.id.buttonJoinHousehold);
+        createHouseholdButton.setVisibility(View.VISIBLE);
+        joinHouseholdButton.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -122,4 +113,3 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         Timber.tag(TAG).d("onDestroy()");
     }
 }
-

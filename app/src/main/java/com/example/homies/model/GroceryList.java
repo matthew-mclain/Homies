@@ -3,55 +3,50 @@ package com.example.homies.model;
 import com.example.homies.MyApplication;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import timber.log.Timber;
 
 public class GroceryList {
-    private String groceryListId;
     private String householdId;
-//    private List<GroceryItem> groceryItems;
     private static FirebaseFirestore db;
-    private static final String TAG = GroceryList.class.getSimpleName();
+    private static final String TAG = User.class.getSimpleName();
 
-    public GroceryList(String groceryListId){
-        //groceryID set to householdID temporarily
-        this.groceryListId = groceryListId;
-        this.householdId = groceryListId;
-//        this.groceryItems = new ArrayList<>();
+    public GroceryList() {
     }
+
+    public GroceryList(String householdId) {
+        this.householdId = householdId;
+    }
+
     public String getHouseholdId() {
-        return householdId;
-    }
-    public String getGroceryListId() {
-        return groceryListId;
+        return this.householdId;
     }
 
-//    public List<GroceryItem> getGroceryItems() {
-//        return groceryItems;
-//    }
+    //    public List<GroceryItem> getGroceryItems() {
+    //        return groceryItems;
+    //    }
 
-    public void createGroceryList(String groceryListId, String householdId) {
-        Map<String, Object> docData = new HashMap<>();
-        docData.put("householdId", householdId);
-        docData.put("groceryListId", groceryListId);
+    public void setHouseholdId(String householdId) {
+        this.householdId = householdId;
+    }
+
+    public static void createGroceryList(String householdId) {
+        GroceryList groceryList = new GroceryList(householdId);
+
         db = MyApplication.getDbInstance();
-        db.collection("groceryLists").document(householdId)
-                .set(docData)
+        db.collection("grocery_lists")
+                .add(groceryList)
                 .addOnSuccessListener(documentReference -> {
-                    Timber.tag(TAG).d("GroceryList created with ID: %s", householdId);
+                    Timber.tag(TAG).d("Grocery list created successfully: %s", documentReference.getId());
                 })
                 .addOnFailureListener(e -> {
-                    // Handle errors here
-                    Timber.tag(TAG).e(e,"Error creating GroceryList");
+                    // Handle errors
+                    Timber.tag(TAG).d("Error creating grocery list");
                 });
     }
+
     public void deleteGroceryList(String groceryListId) {
         db = MyApplication.getDbInstance();
-        db.collection("groceryLists")
+        db.collection("grocery_lists")
                 .document(groceryListId)
                 .delete()
                 .addOnSuccessListener(aVoid -> {
