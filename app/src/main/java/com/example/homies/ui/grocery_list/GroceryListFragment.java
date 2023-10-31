@@ -1,7 +1,6 @@
 package com.example.homies.ui.grocery_list;
 
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,8 +8,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
@@ -19,29 +16,29 @@ import com.example.homies.R;
 import com.example.homies.model.GroceryList;
 import com.example.homies.model.GroceryItem;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.DocumentSnapshot;
 
 
-import java.sql.Array;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.List;
 
 import timber.log.Timber;
 
 public class GroceryListFragment extends Fragment implements View.OnClickListener {
     private final String TAG = getClass().getSimpleName();
     EditText itemET, itemDeleteET, itemOldET, itemNewET;
-    private ListView groceryList;
+    ListView groceryListLV;
     ArrayList<String> groceryArrayList;
-    DocumentReference reference;
     private static FirebaseFirestore db;
     View view;
+    String householdId = "DS12fLdiL8w8uijmj9BJ";    //change this to get householdId from view model later
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -53,27 +50,11 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
         itemOldET = view.findViewById(R.id.TextOldGroceryItem);
         itemNewET = view.findViewById(R.id.TextNewGroceryItem);
 
-        groceryList = view.findViewById(R.id.groceryLV);
+        groceryListLV = view.findViewById(R.id.groceryLV);
         groceryArrayList = new ArrayList<String>();
         db = MyApplication.getDbInstance();
 
-        //Retrieve data
-        db.collection("groceryLists/123/groceryItems")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            Timber.tag(TAG).d("isSuccessful");
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Timber.tag(TAG).d(task.getResult().toString());
-                                Timber.tag(TAG).d(document.getId() + " => " + document.getData());
-                            }
-                        }
-                    }
-                    });
-
-//        initializeListView();
+        initializeListView();
 
         final Button addItemButton = view.findViewById(R.id.addButton);
         if (addItemButton != null) {
@@ -97,14 +78,12 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
         if (view.getId() == R.id.addButton) {
             Timber.tag(TAG).d("add");
             String itemName = String.valueOf(itemET.getText());
-            String householdId = "DS12fLdiL8w8uijmj9BJ";    //change this to get householdId from view model later
             GroceryList g = new GroceryList(householdId);
             GroceryItem.createGroceryItem(householdId, itemName);
         }
         if (view.getId() == R.id.deleteButton) {
             Timber.tag(TAG).d("delete");
             String itemName = String.valueOf(itemDeleteET.getText());
-            String householdId = "DS12fLdiL8w8uijmj9BJ";    //change this to get householdId from view model later
             GroceryItem.deleteGroceryItem(householdId, itemName);
         }
 
@@ -112,15 +91,64 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
             Timber.tag(TAG).d("update");
             String oldItem = String.valueOf(itemOldET.getText());
             String newItem = String.valueOf(itemNewET.getText());
-            String householdId = "DS12fLdiL8w8uijmj9BJ";    //change this to get householdId from view model later
             GroceryItem.updateGroceryItem(householdId, oldItem, newItem);
         }
 
-//        private void initializeListView() {
-//            final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, coursesArrayList);
-//            db = MyApplication.getDbInstance();
-////            reference = db.getReference();
-//
-//        }
+    }
+
+    private void initializeListView() {
+        groceryListLV = view.findViewById(R.id.groceryLV);
+
+        db = FirebaseFirestore.getInstance();
+
+        loadDatainListview();
+    }
+
+    private void loadDatainListview() {
+        db.collection("grocery_lists")
+                .whereEqualTo("householdId", householdId)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        DocumentSnapshot doc = task.getResult().getDocuments().get(0);
+                        db.collection("grocery_lists")
+                                .document(doc.getId())
+                                .collection("grocery_items")
+                                .get()
+                                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                        if (!queryDocumentSnapshots.isEmpty()) {
+                                            List<DocumentSnapshot> list = queryDocumentSnapshots.getDocuments();
+                                            for (DocumentSnapshot d : list) {
+                                                Timber.tag(TAG).d("groceryItem: " + d.getData().get("itemName"));
+                                                groceryArrayList.add(d.getData().get("itemName").toString());
+                                            }
+                                            Timber.tag(TAG).d("Array?: " + groceryArrayList.toString());
+                                            ArrayAdapter adapter = new ArrayAdapter<String> (getContext(), R.layout.grocery_lv_item, groceryArrayList);
+                                            ListView listView = (ListView) view.findViewById(R.id.groceryLV);
+                                            listView.setAdapter(adapter);
+                                        } else {
+                                            Timber.tag(TAG).d("No data found in Database");
+                                        }
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Timber.tag(TAG).d("Fail to load data");
+                                    }
+                                });
+                    }
+                });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        itemET.getText().clear();
+        itemDeleteET.getText().clear();
+        itemOldET.getText().clear();
+        itemNewET.getText().clear();
     }
 }
