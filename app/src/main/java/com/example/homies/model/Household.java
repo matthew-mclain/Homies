@@ -140,8 +140,37 @@ public class Household {
                 });
     }
 
-    public void joinHousehold() {
-        //TODO
+    public static void joinHousehold(String householdName, String userId) {
+        // Query Firestore to find the household with the given name
+        db = MyApplication.getDbInstance();
+        db.collection("households")
+                .whereEqualTo("householdName", householdName)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        Household household = document.toObject(Household.class);
+
+                        // Check if the household contains the current user
+                        if (household.getHouseholdUsers().contains(userId)) {
+                            // User is already a member of this household
+                            Timber.tag(TAG).d("User is already a member of the household with name: %s, ID: %s", householdName, document.getId());
+                            return;
+                        } else {
+                            // Add user to the household and update the Firestore document
+                            household.addUser(userId);
+                            household.updateUsersInFirestore();
+                            Timber.tag(TAG).d("User joined household with name: %s, ID: %s", householdName, document.getId());
+                            return;
+                        }
+                    }
+
+                    // No household found with the given name
+                    Timber.tag(TAG).w("Household with name %s does not exist", householdName);
+                })
+                .addOnFailureListener(e -> {
+                    // Handle errors
+                    Timber.tag(TAG).e(e, "Error joining household");
+                });
     }
 
     public void addUser(String userId) {

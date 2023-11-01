@@ -7,14 +7,10 @@
         android:checkableBehavior="single">
 
         <item
-            android:id="@+id/navigation_create_household"
-            android:title="@string/create_household"
-            android:icon="@drawable/create_household_24"/>
+            android:id="@+id/navigation_household"
+            android:title="@string/create_join_household"
+            android:icon="@drawable/household_24"/>
 
-        <item
-            android:id="@+id/navigation_join_household"
-            android:title="@string/join_household"
-            android:icon="@drawable/join_household_24"/>
 
     </group>
 
