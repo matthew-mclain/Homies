@@ -8,6 +8,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.homies.ui.calendar.CalendarFragment;
 import com.example.homies.ui.grocery_list.GroceryListFragment;
+import com.example.homies.ui.household.HouseholdActivity;
 import com.example.homies.ui.laundry.LaundryFragment;
 import com.example.homies.ui.location.LocationFragment;
 import com.example.homies.ui.messages.MessagesFragment;
@@ -70,10 +71,11 @@ public class MainActivity extends AppCompatActivity {
         //Handle Navdrawer clicks
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
-            if (id == R.id.navigation_create_household) {
-                //show create household fragment
-            } else if (id == R.id.navigation_join_household) {
-                //show join household fragment
+            if (id == R.id.navigation_household) {
+                Intent intent = new Intent(MainActivity.this, HouseholdActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
             } else if (id == R.id.navigation_sign_out) {
                 FirebaseAuth.getInstance().signOut();
                 Intent intent = new Intent(MainActivity.this, SplashActivity.class);
