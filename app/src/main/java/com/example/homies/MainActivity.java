@@ -5,65 +5,90 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.drawerlayout.widget.DrawerLayout;
-import com.example.homies.databinding.ActivityMainBinding;
-import com.example.homies.model.Household;
-import com.example.homies.ui.household.HouseholdActivity;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
 
-import android.view.Menu;
+import com.example.homies.ui.calendar.CalendarFragment;
+import com.example.homies.ui.grocery_list.GroceryListFragment;
+import com.example.homies.ui.laundry.LaundryFragment;
+import com.example.homies.ui.location.LocationFragment;
+import com.example.homies.ui.messages.MessagesFragment;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+
 import android.view.MenuItem;
 import androidx.annotation.NonNull;
-import androidx.lifecycle.LiveData;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
-import java.util.List;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
-    private ActivityMainBinding binding;
     public DrawerLayout drawerLayout;
+    public NavigationView navigationView;
+    public BottomNavigationView bottomNavigationView;
     public ActionBarDrawerToggle actionBarDrawerToggle;
-
-    private LiveData<List<Household>> householdsLiveData;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        setContentView(R.layout.activity_main);
 
-        // NAV BAR
-        BottomNavigationView navView = findViewById(R.id.nav_view);
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_messages, R.id.navigation_grocery_list, R.id.navigation_laundry,
-                R.id.navigation_calendar, R.id.navigation_location).build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-        NavigationUI.setupWithNavController(binding.navView, navController);
-
-        // NAV DRAWER
-        //drawer layout instance to toggle the menu icon to open drawer and back button to close drawer
+        bottomNavigationView = findViewById(R.id.bottomNavigationView);
         drawerLayout = findViewById(R.id.my_drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close);
-        //pass the open and close toggle for the drawer layout listener to toggle the button
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
+
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new MessagesFragment()).commit();
+            navigationView.setCheckedItem(R.id.navigation_messages);
+        }
+
+        //Create new MessagesFragment
+        replaceFragment(new MessagesFragment());
+
+        //Handle Navbar clicks
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.navigation_messages) {
+                replaceFragment(new MessagesFragment());
+            } else if (id == R.id.navigation_grocery_list) {
+                replaceFragment(new GroceryListFragment());
+            } else if (id == R.id.navigation_laundry) {
+                replaceFragment(new LaundryFragment());
+            } else if (id == R.id.navigation_calendar) {
+                replaceFragment(new CalendarFragment());
+            } else if (id == R.id.navigation_location) {
+                replaceFragment(new LocationFragment());
+            }
+            return true;
+        });
+
+        //Handle Navdrawer clicks
+        navigationView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.navigation_create_household) {
+                //show create household fragment
+            } else if (id == R.id.navigation_join_household) {
+                //show join household fragment
+            } else if (id == R.id.navigation_sign_out) {
+                FirebaseAuth.getInstance().signOut();
+                Intent intent = new Intent(MainActivity.this, SplashActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            }
+            return true;
+        });
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
     }
 
-    // override the onOptionsItemSelected()
-    // function to implement
-    // the item click listener callback
-    // to open and close the navigation
-    // drawer when the icon is clicked
+    // override the onOptionsItemSelected() function to implement the item click listener callback
+    // to open and close the navigation drawer when the icon is clicked
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
@@ -72,5 +97,10 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    //TODO: Navigation Drawer disappears when switching Fragments, need to always have access to it.
+    private void replaceFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, fragment);
+        fragmentTransaction.commit();
+    }
 }

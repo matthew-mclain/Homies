@@ -47,7 +47,7 @@ public class HouseholdActivity extends AppCompatActivity implements View.OnClick
         }
     }
 
-    // Method to switch to SignUpFragment
+    // Method to switch to CreateHouseholdFragment
     public void showCreateHouseholdFragment() {
         hideButtons();
         getSupportFragmentManager().beginTransaction()
@@ -56,7 +56,7 @@ public class HouseholdActivity extends AppCompatActivity implements View.OnClick
                 .commit();
     }
 
-    // Method to switch to SignInFragment
+    // Method to switch to JoinHouseholdFragment
     public void showJoinHouseholdFragment() {
         hideButtons();
         getSupportFragmentManager().beginTransaction()
