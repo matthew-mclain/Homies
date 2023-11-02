@@ -1,14 +1,10 @@
 package com.example.homies.model;
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-
 import com.example.homies.MyApplication;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import timber.log.Timber;
@@ -20,11 +16,6 @@ public class Household {
     private ArrayList<String> householdUsers;
     private static FirebaseFirestore db;
     private static final String TAG = Household.class.getSimpleName();
-    private static final MutableLiveData<List<Household>> householdsLiveData = new MutableLiveData<>();
-
-    public static LiveData<List<Household>> getHouseholdsLiveData() {
-        return householdsLiveData;
-    }
 
     public Household() {
     }
@@ -75,24 +66,6 @@ public class Household {
                 .addOnFailureListener(e -> {
                     // Handle errors
                     Timber.tag(TAG).e(e, "Error getting household data for household ID: %s", householdId);
-                });
-    }
-
-    public static void getAllHouseholds() {
-        db = MyApplication.getDbInstance();
-        db.collection("households")
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    List<Household> householdsList = new ArrayList<>();
-                    for (QueryDocumentSnapshot document : querySnapshot) {
-                        Household household = document.toObject(Household.class);
-                        householdsList.add(household);
-                    }
-                    householdsLiveData.setValue(householdsList);
-                })
-                .addOnFailureListener(e -> {
-                    // Handle errors
-                    Timber.tag(TAG).e(e, "Error getting households data");
                 });
     }
 
@@ -159,6 +132,7 @@ public class Household {
                             // Add user to the household and update the Firestore document
                             household.addUser(userId);
                             household.updateUsersInFirestore();
+                            household.updateHouseholdInFirestore();
                             Timber.tag(TAG).d("User joined household with name: %s, ID: %s", householdName, document.getId());
                             return;
                         }
