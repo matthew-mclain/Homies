@@ -6,6 +6,11 @@
             android:id="@+id/navigation_household"
             android:title="@string/create_join_household"
             android:icon="@drawable/add_household_24"/>
+
+        <item
+            android:id="@+id/navigation_leave_household"
+            android:title="@string/leave_household"
+            android:icon="@drawable/leave_24"/>
     </group>
 
     <group
@@ -13,6 +18,7 @@
         android:checkableBehavior="single">
 
         <!-- Dynamic household items will be added here -->
+
     </group>
 
     <item

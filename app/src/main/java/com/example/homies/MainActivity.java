@@ -2,6 +2,8 @@ package com.example.homies;
 
 import android.content.Intent;
 import android.os.Bundle;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.core.view.GravityCompat;
@@ -20,8 +22,12 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -114,6 +120,8 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, HouseholdActivity.class);
                 startActivity(intent);
                 drawerLayout.closeDrawer(GravityCompat.START);
+            } else if (id == R.id.navigation_leave_household) { //Leave Household
+                showLeaveHouseholdDialog();
             } else if (item.getGroupId() == R.id.group_households) { //Household
                 String householdName = item.getTitle().toString();
                 viewModel.getHouseholdByName(householdName); // This will update the selectedHousehold LiveData
@@ -155,5 +163,31 @@ public class MainActivity extends AppCompatActivity {
             Timber.tag(TAG).d("Current user is null. User not signed in.");
             return null;
         }
+    }
+
+    private void showLeaveHouseholdDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Which Household Are You Leaving?");
+
+        // Set up the input
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setHint("Household Name");
+        builder.setView(input);
+
+        builder.setPositiveButton("Leave", (dialog, which) -> {
+            String userId = getCurrentUserId();
+            String enteredHouseholdName = input.getText().toString().trim();
+            if (!enteredHouseholdName.isEmpty()) {
+                Household.leaveHousehold(enteredHouseholdName, userId);
+            } else {
+                // Show an error message for empty input
+                Toast.makeText(this, "Please enter the household name.", Toast.LENGTH_SHORT).show();
+            }
+            dialog.dismiss();
+        });
+
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        builder.show();
     }
 }
