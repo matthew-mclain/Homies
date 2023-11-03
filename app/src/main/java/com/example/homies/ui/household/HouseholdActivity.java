@@ -1,10 +1,12 @@
 package com.example.homies.ui.household;
 
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.homies.R;
@@ -30,6 +32,12 @@ public class HouseholdActivity extends AppCompatActivity implements View.OnClick
 
         signInButton.setOnClickListener(this);
         signUpButton.setOnClickListener(this);
+
+        // Set up the ActionBar to display a back arrow
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true); // Enable back arrow
+        }
     }
 
     @Override
@@ -81,6 +89,16 @@ public class HouseholdActivity extends AppCompatActivity implements View.OnClick
         Button joinHouseholdButton = findViewById(R.id.buttonJoinHousehold);
         createHouseholdButton.setVisibility(View.VISIBLE);
         joinHouseholdButton.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle back arrow click
+        if (item.getItemId() == android.R.id.home) {
+            finish(); // Close the activity
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

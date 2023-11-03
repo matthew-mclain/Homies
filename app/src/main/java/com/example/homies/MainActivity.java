@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.homies.model.Household;
@@ -109,15 +110,15 @@ public class MainActivity extends AppCompatActivity {
     private void handleNavdrawerClicks(HouseholdViewModel viewModel) {
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
-            if (id == R.id.navigation_household) {
+            if (id == R.id.navigation_household) { //Create/Join Household
                 Intent intent = new Intent(MainActivity.this, HouseholdActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
-                finish();
-            } else if (item.getGroupId() == R.id.group_households) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            } else if (item.getGroupId() == R.id.group_households) { //Household
                 String householdName = item.getTitle().toString();
                 viewModel.getHouseholdByName(householdName); // This will update the selectedHousehold LiveData
-            } else if (id == R.id.navigation_sign_out) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            } else if (id == R.id.navigation_sign_out) { //Sign Out
                 FirebaseAuth.getInstance().signOut();
                 Intent intent = new Intent(MainActivity.this, SplashActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

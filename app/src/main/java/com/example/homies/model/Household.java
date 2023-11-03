@@ -131,7 +131,6 @@ public class Household {
                         } else {
                             // Add user to the household and update the Firestore document
                             household.addUser(userId);
-                            household.updateUsersInFirestore();
                             household.updateHouseholdInFirestore();
                             Timber.tag(TAG).d("User joined household with name: %s, ID: %s", householdName, document.getId());
                             return;
