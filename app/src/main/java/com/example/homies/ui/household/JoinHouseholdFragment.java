@@ -24,9 +24,6 @@ public class JoinHouseholdFragment extends Fragment implements View.OnClickListe
     HouseholdActivity householdActivity;
     View view;
     private EditText editTextHouseholdName;
-    private Button buttonJoin;
-    private Button buttonBack;
-    private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private final String TAG = getClass().getSimpleName();
 
@@ -40,13 +37,13 @@ public class JoinHouseholdFragment extends Fragment implements View.OnClickListe
         view = inflater.inflate(R.layout.fragment_join_household, container, false);
         Timber.tag(TAG).d("onCreateView()");
 
-        mAuth = FirebaseAuth.getInstance();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
 
         editTextHouseholdName = view.findViewById(R.id.editTextHouseholdName);
 
-        buttonJoin = view.findViewById(R.id.buttonJoin);
-        buttonBack = view.findViewById(R.id.buttonBack);
+        Button buttonJoin = view.findViewById(R.id.buttonJoin);
+        Button buttonBack = view.findViewById(R.id.buttonBack);
         buttonJoin.setOnClickListener(this);
         buttonBack.setOnClickListener(this);
 

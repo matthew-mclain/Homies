@@ -28,4 +28,5 @@
     <string name="household_name">Household Name</string>
     <string name="join">Join</string>
     <string name="create_join_household">Create/Join Household</string>
+    <string name="leave_household">Leave Household</string>
 </resources>
