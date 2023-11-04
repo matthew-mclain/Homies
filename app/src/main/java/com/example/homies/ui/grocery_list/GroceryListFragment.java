@@ -37,6 +37,7 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
     ListView groceryListLV;
     ArrayList<String> groceryArrayList;
     private static FirebaseFirestore db;
+    ArrayAdapter adapter;
     View view;
     String householdId = "DS12fLdiL8w8uijmj9BJ";    //change this to get householdId from view model later
 
@@ -53,6 +54,7 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
         groceryListLV = view.findViewById(R.id.groceryLV);
         groceryArrayList = new ArrayList<String>();
         db = MyApplication.getDbInstance();
+        adapter = new ArrayAdapter<String> (getContext(), R.layout.grocery_lv_item, groceryArrayList);
 
         initializeListView();
 
@@ -80,11 +82,15 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
             String itemName = String.valueOf(itemET.getText());
             GroceryList g = new GroceryList(householdId);
             GroceryItem.createGroceryItem(householdId, itemName);
+            groceryArrayList.add(itemName);
+            adapter.notifyDataSetChanged();
         }
         if (view.getId() == R.id.deleteButton) {
             Timber.tag(TAG).d("delete");
             String itemName = String.valueOf(itemDeleteET.getText());
             GroceryItem.deleteGroceryItem(householdId, itemName);
+            groceryArrayList.remove(itemName);
+            adapter.notifyDataSetChanged();
         }
 
         if (view.getId() == R.id.updateButton) {
@@ -92,6 +98,9 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
             String oldItem = String.valueOf(itemOldET.getText());
             String newItem = String.valueOf(itemNewET.getText());
             GroceryItem.updateGroceryItem(householdId, oldItem, newItem);
+            int index = groceryArrayList.indexOf(oldItem);
+            groceryArrayList.set(index, newItem);
+            adapter.notifyDataSetChanged();
         }
 
     }
@@ -126,7 +135,6 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
                                                 groceryArrayList.add(d.getData().get("itemName").toString());
                                             }
                                             Timber.tag(TAG).d("Array?: " + groceryArrayList.toString());
-                                            ArrayAdapter adapter = new ArrayAdapter<String> (getContext(), R.layout.grocery_lv_item, groceryArrayList);
                                             ListView listView = (ListView) view.findViewById(R.id.groceryLV);
                                             listView.setAdapter(adapter);
                                         } else {
