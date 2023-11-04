@@ -12,7 +12,7 @@ import timber.log.Timber;
 public class LaundryManager {
     private String householdId;
     private static FirebaseFirestore db;
-    private static final String TAG = User.class.getSimpleName();
+    private static final String TAG = LaundryManager.class.getSimpleName();
 
     public LaundryManager() {
     }

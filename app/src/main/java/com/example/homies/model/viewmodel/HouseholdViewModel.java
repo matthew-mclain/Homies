@@ -1,5 +1,10 @@
 package com.example.homies.model.viewmodel;
 
+import android.app.Application;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -18,7 +23,7 @@ public class HouseholdViewModel extends ViewModel {
     private MutableLiveData<List<Household>> userHouseholds = new MutableLiveData<>();
     private MutableLiveData<Household> selectedHousehold = new MutableLiveData<>();
     private static FirebaseFirestore db;
-    private static final String TAG = Household.class.getSimpleName();
+    private static final String TAG = HouseholdViewModel.class.getSimpleName();
 
     public LiveData<List<Household>> getUserHouseholds(String userId) {
         MutableLiveData<List<Household>> userHouseholdsLiveData = new MutableLiveData<>();
@@ -45,6 +50,7 @@ public class HouseholdViewModel extends ViewModel {
     }
 
     public LiveData<Household> getSelectedHousehold() {
+        Timber.tag(TAG).d("Getting selected household: %s", selectedHousehold);
         return selectedHousehold;
     }
 
@@ -54,6 +60,7 @@ public class HouseholdViewModel extends ViewModel {
     }
 
     public void setSelectedHousehold(Household household) {
+        Timber.tag(TAG).d("Setting selected household: %s", selectedHousehold);
         selectedHousehold.setValue(household);
     }
 
@@ -66,15 +73,14 @@ public class HouseholdViewModel extends ViewModel {
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Household household = document.toObject(Household.class);
-                            Timber.tag(TAG).d("Household found: %s", household.getHouseholdName());
-                            selectedHousehold.setValue(household);
+                            setSelectedHousehold(household);
                             return; // Found the household, update LiveData and exit
                         }
                         // Household not found with the given name
-                        selectedHousehold.setValue(null);
+                        setSelectedHousehold(null);
                     } else {
                         // Handle failures
-                        selectedHousehold.setValue(null);
+                        setSelectedHousehold(null);
                     }
                 });
     }
