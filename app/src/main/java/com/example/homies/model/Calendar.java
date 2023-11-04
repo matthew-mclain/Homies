@@ -10,7 +10,7 @@ import timber.log.Timber;
 public class Calendar {
     private String householdId;
     private static FirebaseFirestore db;
-    private static final String TAG = User.class.getSimpleName();
+    private static final String TAG = Calendar.class.getSimpleName();
 
     public Calendar() {
     }

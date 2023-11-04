@@ -29,4 +29,6 @@
     <string name="join">Join</string>
     <string name="create_join_household">Create/Join Household</string>
     <string name="leave_household">Leave Household</string>
+    <string name="send_message">Send message...</string>
+    <string name="send">Send</string>
 </resources>

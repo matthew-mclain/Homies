@@ -41,7 +41,9 @@ public class MainActivity extends AppCompatActivity {
     public NavigationView navigationView;
     public BottomNavigationView bottomNavigationView;
     public ActionBarDrawerToggle actionBarDrawerToggle;
-    private static final String TAG = Household.class.getSimpleName();
+    private HouseholdViewModel householdViewModel;
+
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,8 +66,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Observe the user's households from the ViewModel
-        HouseholdViewModel viewModel = new ViewModelProvider(this).get(HouseholdViewModel.class);
-        viewModel.getUserHouseholds(getCurrentUserId()).observe(this, households -> {
+        householdViewModel = new ViewModelProvider(this).get(HouseholdViewModel.class);
+        householdViewModel.getUserHouseholds(getCurrentUserId()).observe(this, households -> {
             // Update the navigation drawer menu with household names
             Timber.tag(TAG).d("Received user households: %s", households);
             Menu navMenu = navigationView.getMenu();
@@ -80,17 +82,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Observe the currently selected household
-        viewModel.getSelectedHousehold().observe(this, selectedHousehold -> {
-            //TODO: set fragments to display the correct model assigned to the selected household
-        });
-
         //Create new MessagesFragment
         replaceFragment(new MessagesFragment());
 
         //Handle Navbar and Navdrawer Clicks
         handleNavbarClicks();
-        handleNavdrawerClicks(viewModel);
+        handleNavdrawerClicks(householdViewModel);
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
     }
