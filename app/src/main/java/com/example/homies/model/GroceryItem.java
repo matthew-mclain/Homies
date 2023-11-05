@@ -22,15 +22,14 @@ import timber.log.Timber;
 public class GroceryItem {
     private String groceryItemId;
     private String groceryItemName;
-    private String householdId;
     private static FirebaseFirestore db;
     private static final String TAG = GroceryItem.class.getSimpleName();
 
     public GroceryItem(){}
 
-    public GroceryItem(String groceryItemName, String householdId) {
+    public GroceryItem(String groceryItemId, String groceryItemName) {
+        this.groceryItemId = groceryItemId;
         this.groceryItemName = groceryItemName;
-        this.householdId = householdId;
     }
 
     public String getGroceryItemId() {
