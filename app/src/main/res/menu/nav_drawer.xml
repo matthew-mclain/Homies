@@ -1,17 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="hardcodeText">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group>
+        <item
+            android:id="@+id/navigation_household"
+            android:title="@string/create_join_household"
+            android:icon="@drawable/add_household_24"/>
+
+        <item
+            android:id="@+id/navigation_leave_household"
+            android:title="@string/leave_household"
+            android:icon="@drawable/leave_24"/>
+    </group>
+
+    <group
+        android:id="@+id/group_households"
+        android:checkableBehavior="single">
+
+        <!-- Dynamic household items will be added here -->
+
+    </group>
 
     <item
-        android:id="@+id/nav_create_household"
-        android:title="@string/create_household" />
-
-    <item
-        android:id="@+id/join_household"
-        android:title="@string/join_household"/>
-
-    <item
-        android:id="@+id/sign_out"
-        android:title="@string/sign_out"/>
+        android:id="@+id/navigation_sign_out"
+        android:title="@string/sign_out"
+        android:icon="@drawable/sign_out_24"/>
 </menu>

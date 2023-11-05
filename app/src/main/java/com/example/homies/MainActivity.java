@@ -2,68 +2,143 @@ package com.example.homies;
 
 import android.content.Intent;
 import android.os.Bundle;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import com.example.homies.databinding.ActivityMainBinding;
+
 import com.example.homies.model.Household;
+import com.example.homies.model.viewmodel.HouseholdViewModel;
+import com.example.homies.ui.calendar.CalendarFragment;
+import com.example.homies.ui.grocery_list.GroceryListFragment;
 import com.example.homies.ui.household.HouseholdActivity;
+import com.example.homies.ui.laundry.LaundryFragment;
+import com.example.homies.ui.location.LocationFragment;
+import com.example.homies.ui.messages.MessagesFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
 
+import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
-import androidx.annotation.NonNull;
-import androidx.lifecycle.LiveData;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
+import android.widget.EditText;
+import android.widget.Toast;
 
-import java.util.List;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 import java.util.Objects;
+import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
-    private ActivityMainBinding binding;
     public DrawerLayout drawerLayout;
+    public NavigationView navigationView;
+    public BottomNavigationView bottomNavigationView;
     public ActionBarDrawerToggle actionBarDrawerToggle;
-
-    private LiveData<List<Household>> householdsLiveData;
-
+    private static final String TAG = Household.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        setContentView(R.layout.activity_main);
 
-        // NAV BAR
-        BottomNavigationView navView = findViewById(R.id.nav_view);
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_messages, R.id.navigation_grocery_list, R.id.navigation_laundry,
-                R.id.navigation_calendar, R.id.navigation_location).build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-        NavigationUI.setupWithNavController(binding.navView, navController);
-
-        // NAV DRAWER
-        //drawer layout instance to toggle the menu icon to open drawer and back button to close drawer
+        // Initialize views
+        bottomNavigationView = findViewById(R.id.bottomNavigationView);
         drawerLayout = findViewById(R.id.my_drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+
+        // Initialize ActionBarDrawerToggle
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close);
-        //pass the open and close toggle for the drawer layout listener to toggle the button
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
+
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new MessagesFragment()).commit();
+            navigationView.setCheckedItem(R.id.navigation_messages);
+        }
+
+        // Observe the user's households from the ViewModel
+        HouseholdViewModel viewModel = new ViewModelProvider(this).get(HouseholdViewModel.class);
+        viewModel.getUserHouseholds(getCurrentUserId()).observe(this, households -> {
+            // Update the navigation drawer menu with household names
+            Timber.tag(TAG).d("Received user households: %s", households);
+            Menu navMenu = navigationView.getMenu();
+
+            // Clear the items in the group_households group
+            navMenu.removeGroup(R.id.group_households);
+
+            for (Household household : households) {
+                Timber.tag(TAG).d("Adding household: %s", household.getHouseholdName());
+                MenuItem menuItem = navMenu.add(R.id.group_households, Menu.NONE, Menu.NONE, household.getHouseholdName()).setCheckable(true);
+                menuItem.setIcon(R.drawable.household_24);
+            }
+        });
+
+        // Observe the currently selected household
+        viewModel.getSelectedHousehold().observe(this, selectedHousehold -> {
+            //TODO: set fragments to display the correct model assigned to the selected household
+        });
+
+        //Create new MessagesFragment
+        replaceFragment(new MessagesFragment());
+
+        //Handle Navbar and Navdrawer Clicks
+        handleNavbarClicks();
+        handleNavdrawerClicks(viewModel);
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
     }
 
-    // override the onOptionsItemSelected()
-    // function to implement
-    // the item click listener callback
-    // to open and close the navigation
-    // drawer when the icon is clicked
+    private void handleNavbarClicks() {
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.navigation_messages) {
+                replaceFragment(new MessagesFragment());
+            } else if (id == R.id.navigation_grocery_list) {
+                replaceFragment(new GroceryListFragment());
+            } else if (id == R.id.navigation_laundry) {
+                replaceFragment(new LaundryFragment());
+            } else if (id == R.id.navigation_calendar) {
+                replaceFragment(new CalendarFragment());
+            } else if (id == R.id.navigation_location) {
+                replaceFragment(new LocationFragment());
+            }
+            return true;
+        });
+    }
+
+    private void handleNavdrawerClicks(HouseholdViewModel viewModel) {
+        navigationView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.navigation_household) { //Create/Join Household
+                Intent intent = new Intent(MainActivity.this, HouseholdActivity.class);
+                startActivity(intent);
+                drawerLayout.closeDrawer(GravityCompat.START);
+            } else if (id == R.id.navigation_leave_household) { //Leave Household
+                showLeaveHouseholdDialog();
+            } else if (item.getGroupId() == R.id.group_households) { //Household
+                String householdName = item.getTitle().toString();
+                viewModel.getHouseholdByName(householdName); // This will update the selectedHousehold LiveData
+                drawerLayout.closeDrawer(GravityCompat.START);
+            } else if (id == R.id.navigation_sign_out) { //Sign Out
+                FirebaseAuth.getInstance().signOut();
+                Intent intent = new Intent(MainActivity.this, SplashActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            }
+            return true;
+        });
+    }
+
+    // Override the onOptionsItemSelected() function to implement the item click listener callback
+    // to open and close the navigation drawer when the icon is clicked
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
@@ -72,5 +147,47 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    //TODO: Navigation Drawer disappears when switching Fragments, need to always have access to it.
+    private void replaceFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, fragment);
+        fragmentTransaction.commit();
+    }
+
+    private String getCurrentUserId() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            return currentUser.getUid();
+        } else {
+            // Handle the case where the user is not signed in
+            Timber.tag(TAG).d("Current user is null. User not signed in.");
+            return null;
+        }
+    }
+
+    private void showLeaveHouseholdDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Which Household Are You Leaving?");
+
+        // Set up the input
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setHint("Household Name");
+        builder.setView(input);
+
+        builder.setPositiveButton("Leave", (dialog, which) -> {
+            String userId = getCurrentUserId();
+            String enteredHouseholdName = input.getText().toString().trim();
+            if (!enteredHouseholdName.isEmpty()) {
+                Household.leaveHousehold(enteredHouseholdName, userId);
+            } else {
+                // Show an error message for empty input
+                Toast.makeText(this, "Please enter the household name.", Toast.LENGTH_SHORT).show();
+            }
+            dialog.dismiss();
+        });
+
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        builder.show();
+    }
 }

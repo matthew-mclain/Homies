@@ -1,14 +1,10 @@
 package com.example.homies.model;
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-
 import com.example.homies.MyApplication;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import timber.log.Timber;
@@ -20,11 +16,6 @@ public class Household {
     private ArrayList<String> householdUsers;
     private static FirebaseFirestore db;
     private static final String TAG = Household.class.getSimpleName();
-    private static final MutableLiveData<List<Household>> householdsLiveData = new MutableLiveData<>();
-
-    public static LiveData<List<Household>> getHouseholdsLiveData() {
-        return householdsLiveData;
-    }
 
     public Household() {
     }
@@ -78,24 +69,6 @@ public class Household {
                 });
     }
 
-    public static void getAllHouseholds() {
-        db = MyApplication.getDbInstance();
-        db.collection("households")
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    List<Household> householdsList = new ArrayList<>();
-                    for (QueryDocumentSnapshot document : querySnapshot) {
-                        Household household = document.toObject(Household.class);
-                        householdsList.add(household);
-                    }
-                    householdsLiveData.setValue(householdsList);
-                })
-                .addOnFailureListener(e -> {
-                    // Handle errors
-                    Timber.tag(TAG).e(e, "Error getting households data");
-                });
-    }
-
     public static void createHousehold(String householdName, String userId) {
         Household household = new Household(householdName);
 
@@ -140,8 +113,70 @@ public class Household {
                 });
     }
 
-    public void joinHousehold() {
-        //TODO
+    public static void joinHousehold(String householdName, String userId) {
+        // Query Firestore to find the household with the given name
+        db = MyApplication.getDbInstance();
+        db.collection("households")
+                .whereEqualTo("householdName", householdName)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        Household household = document.toObject(Household.class);
+
+                        // Check if the household contains the current user
+                        if (household.getHouseholdUsers().contains(userId)) {
+                            // User is already a member of this household
+                            Timber.tag(TAG).d("User is already a member of the household with name: %s, ID: %s", householdName, document.getId());
+                            return;
+                        } else {
+                            // Add user to the household and update the Firestore document
+                            household.addUser(userId);
+                            household.updateHouseholdInFirestore();
+                            Timber.tag(TAG).d("User joined household with name: %s, ID: %s", householdName, document.getId());
+                            return;
+                        }
+                    }
+
+                    // No household found with the given name
+                    Timber.tag(TAG).w("Household with name %s does not exist", householdName);
+                })
+                .addOnFailureListener(e -> {
+                    // Handle errors
+                    Timber.tag(TAG).e(e, "Error joining household");
+                });
+    }
+
+    public static void leaveHousehold(String householdName, String userId) {
+        // Query Firestore to find the household with the given name
+        db = MyApplication.getDbInstance();
+        db.collection("households")
+                .whereEqualTo("householdName", householdName)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        Household household = document.toObject(Household.class);
+
+                        // Check if the household contains the current user
+                        if (!household.getHouseholdUsers().contains(userId)) {
+                            // User is already a member of this household
+                            Timber.tag(TAG).d("User is not a member of the household with name: %s, ID: %s", householdName, document.getId());
+                            return;
+                        } else {
+                            // Remove user to the household and update the Firestore document
+                            household.removeUser(userId);
+                            household.updateHouseholdInFirestore();
+                            Timber.tag(TAG).d("User left household with name: %s, ID: %s", householdName, document.getId());
+                            return;
+                        }
+                    }
+
+                    // No household found with the given name
+                    Timber.tag(TAG).w("Household with name %s does not exist", householdName);
+                })
+                .addOnFailureListener(e -> {
+                    // Handle errors
+                    Timber.tag(TAG).e(e, "Error leaving household");
+                });
     }
 
     public void addUser(String userId) {
@@ -153,8 +188,10 @@ public class Household {
 
     // Method to remove a user from the household
     public void removeUser(String userId) {
-        householdUsers.remove(userId);
-        updateUsersInFirestore();
+        if (householdUsers.contains(userId)) {
+            householdUsers.remove(userId);
+            updateUsersInFirestore();
+        }
     }
 
     private void updateUsersInFirestore() {
