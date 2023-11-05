@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <Spinner
+        android:id="@+id/spinnerLaundryMachine"
+        android:layout_width="match_parent"
+        android:layout_height="56dp" />
+
+    <TextView
+        android:id="@+id/textViewDuration"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Duration (min)" />
+
+    <SeekBar
+        android:id="@+id/seekBarDuration"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="180"
+        android:progress="60" />
+
+    <TextView
+        android:id="@+id/textViewSeekbarValue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="60" />
+
+    <Button
+        android:id="@+id/startMachineButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start" />
+</LinearLayout>

@@ -1,30 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fragment_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:id="@+id/fragment_container">
+    android:padding="16dp">
 
     <!-- App Title -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/homies"
-        android:textSize="24sp"
-        android:textColor="@android:color/black"
-        android:gravity="center"
         android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="32dp"/>
+        android:layout_marginBottom="32dp"
+        android:gravity="center"
+        android:text="@string/homies"
+        android:textColor="@android:color/black"
+        android:textSize="24sp" />
 
     <!-- Sign In Button -->
     <Button
         android:id="@+id/buttonSignIn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:text="@string/sign_in"
-        android:textSize="18sp"
-        android:layout_marginBottom="16dp"/>
+        android:textSize="18sp" />
 
     <!-- Sign Up Button -->
     <Button
@@ -32,6 +33,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/sign_up"
-        android:textSize="18sp"/>
+        android:textSize="18sp" />
 
 </LinearLayout>
