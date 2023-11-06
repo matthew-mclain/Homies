@@ -4,10 +4,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,23 +15,12 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.homies.MyApplication;
 import com.example.homies.R;
-import com.example.homies.model.GroceryList;
 import com.example.homies.model.GroceryItem;
+import com.example.homies.model.viewmodel.HouseholdViewModel;
 import com.example.homies.viewmodel.GroceryListViewModel;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.DocumentSnapshot;
 
-
-import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,15 +30,14 @@ import timber.log.Timber;
 public class GroceryListFragment extends Fragment implements View.OnClickListener {
     private final String TAG = getClass().getSimpleName();
     EditText itemET, itemDeleteET, itemOldET, itemNewET;
-//    ListView groceryListLV;
     RecyclerView recyclerViewGrocery;
     ArrayList<String> groceryItemsArrayList = new ArrayList<>();
     private static FirebaseFirestore db;
     GroceryAdapter adapter;
     View view;
-//    private HouseholdViewModel householdViewModel;
+    private HouseholdViewModel householdViewModel;
     private GroceryListViewModel groceryListViewModel;
-    String householdId = "DS12fLdiL8w8uijmj9BJ";    //change this to get householdId from view model later
+//    String householdId = "DS12fLdiL8w8uijmj9BJ";    //change this to get householdId from view model later
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -78,13 +64,6 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
 
         recyclerViewGrocery = view.findViewById(R.id.recyclerViewGrocery);
 
-//        groceryListLV = view.findViewById(R.id.groceryLV);
-
-//        db = MyApplication.getDbInstance();
-//        adapter = new ArrayAdapter<String> (getContext(), R.layout.grocery_lv_item, R.id.checkbox, groceryArrayList);
-
-//        initializeListView();
-
         adapter = new GroceryAdapter(groceryItemsArrayList);
 
         recyclerViewGrocery.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -100,20 +79,19 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
 
 
         //Initialize ViewModel instances
-//        householdViewModel = new ViewModelProvider(requireActivity()).get(HouseholdViewModel.class);
+        householdViewModel = new ViewModelProvider(requireActivity()).get(HouseholdViewModel.class);
         groceryListViewModel = new ViewModelProvider(this).get(GroceryListViewModel.class);
 
-        // Observe the selected household LiveData
-//        householdViewModel.getSelectedHousehold().observe(getViewLifecycleOwner(), household -> {
-//            if (household != null) {
-//                Timber.tag(TAG).d("Selected household observed: %s", household.getHouseholdId());
-//                // Fetch messages for the selected household's group chat
-//                groupChatViewModel.getMessagesForGroupChat(household.getHouseholdId());
-//            } else {
-//                Timber.tag(TAG).d("No household selected.");
-//            }
-//        });
-        groceryListViewModel.getItemsFromGroceryList(householdId);  //replace with above later
+        //Observe the selected household LiveData
+        householdViewModel.getSelectedHousehold().observe(getViewLifecycleOwner(), household -> {
+            if (household != null) {
+                Timber.tag(TAG).d("Selected household observed: %s", household.getHouseholdId());
+                // Fetch messages for the selected household's group chat
+                groceryListViewModel.getItemsFromGroceryList(household.getHouseholdId());
+            } else {
+                Timber.tag(TAG).d("No household selected.");
+            }
+        });
 
 
         //Observe the grocery items LiveData
@@ -122,7 +100,7 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
                 Timber.tag(TAG).d("Grocery items: " + items.size());
                 groceryItemsArrayList.clear();
                 for (GroceryItem item: items) {
-                    groceryItemsArrayList.add(item.getGroceryItemName());
+                    groceryItemsArrayList.add(item.getItemName());
                 }
                 adapter.notifyDataSetChanged();
             } else {
@@ -137,75 +115,33 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
         if (view.getId() == R.id.addButton) {
             Timber.tag(TAG).d("add");
             String itemName = String.valueOf(itemET.getText());
-            GroceryItem.createGroceryItem(householdId, itemName);
-//            groceryItemsArrayList.add(itemName);
-//            adapter.notifyDataSetChanged();
+            groceryListViewModel.addGroceryItem(itemName);
+            groceryItemsArrayList.add(itemName);
+            adapter.notifyDataSetChanged();
+            itemET.getText().clear();
         }
         if (view.getId() == R.id.deleteButton) {
             Timber.tag(TAG).d("delete");
             String itemName = String.valueOf(itemDeleteET.getText());
-            GroceryItem.deleteGroceryItem(householdId, itemName);
-//            groceryItemsArrayList.remove(itemName);
-//            adapter.notifyDataSetChanged();
+            groceryListViewModel.deleteGroceryItem(itemName);
+            groceryItemsArrayList.remove(itemName);
+            adapter.notifyDataSetChanged();
+            itemDeleteET.getText().clear();
         }
 
         if (view.getId() == R.id.updateButton) {
             Timber.tag(TAG).d("update");
             String oldItem = String.valueOf(itemOldET.getText());
             String newItem = String.valueOf(itemNewET.getText());
-            GroceryItem.updateGroceryItem(householdId, oldItem, newItem);
-//            int index = groceryItemsArrayList.indexOf(oldItem);
-//            groceryItemsArrayList.set(index, newItem);
-//            adapter.notifyDataSetChanged();
+            groceryListViewModel.updateGroceryItem(oldItem, newItem);
+            int index = groceryItemsArrayList.indexOf(oldItem);
+            groceryItemsArrayList.set(index, newItem);
+            adapter.notifyDataSetChanged();
+            itemOldET.getText().clear();
+            itemNewET.getText().clear();
         }
 
     }
-
-//    private void initializeListView() {
-//        groceryListLV = view.findViewById(R.id.groceryLV);
-//
-//        db = FirebaseFirestore.getInstance();
-//
-//        loadDatainListview();
-//    }
-
-//    private void loadDatainListview() {
-//        db.collection("grocery_lists")
-//                .whereEqualTo("householdId", householdId)
-//                .get()
-//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                        DocumentSnapshot doc = task.getResult().getDocuments().get(0);
-//                        db.collection("grocery_lists")
-//                                .document(doc.getId())
-//                                .collection("grocery_items")
-//                                .get()
-//                                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-//                                    @Override
-//                                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-//                                        if (!queryDocumentSnapshots.isEmpty()) {
-//                                            List<DocumentSnapshot> list = queryDocumentSnapshots.getDocuments();
-//                                            for (DocumentSnapshot d : list) {
-//                                                Timber.tag(TAG).d("groceryItem: " + d.getData().get("itemName"));
-//                                                groceryItemsArrayList.add(d.getData().get("itemName").toString());
-//                                            }
-//                                            Timber.tag(TAG).d("Array?: " + groceryItemsArrayList.toString());
-//                                            ListView listView = (ListView) view.findViewById(R.id.groceryLV);
-//                                            listView.setAdapter(adapter);
-//                                        } else {
-//                                            Timber.tag(TAG).d("No data found in Database");
-//                                        }
-//                                    }
-//                                }).addOnFailureListener(new OnFailureListener() {
-//                                    @Override
-//                                    public void onFailure(@NonNull Exception e) {
-//                                        Timber.tag(TAG).d("Fail to load data");
-//                                    }
-//                                });
-//                    }
-//                });
-//    }
 
     @Override
     public void onResume() {
