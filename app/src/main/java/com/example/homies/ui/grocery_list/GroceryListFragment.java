@@ -6,9 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.homies.R;
 import com.example.homies.model.GroceryItem;
 import com.example.homies.model.viewmodel.HouseholdViewModel;
-import com.example.homies.viewmodel.GroceryListViewModel;
+import com.example.homies.model.viewmodel.GroceryListViewModel;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 
