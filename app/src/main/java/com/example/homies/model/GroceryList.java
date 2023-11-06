@@ -76,7 +76,6 @@ public class GroceryList {
                         @Override
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
                             if (task.isSuccessful()) {
-                                Timber.tag(TAG).d("here");
                                 DocumentSnapshot doc = task.getResult().getDocuments().get(0);
                                 db.collection("grocery_lists")
                                         .document(doc.getId())
