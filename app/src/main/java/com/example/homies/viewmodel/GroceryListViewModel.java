@@ -100,4 +100,36 @@ public class GroceryListViewModel extends ViewModel {
                         });
         }
 
+        public void addGroceryItem(String itemName) {
+            GroceryList groceryList = selectedGroceryList.getValue();
+            if (groceryList != null) {
+                groceryList.addGroceryItem(itemName);
+                Timber.tag(TAG).d(itemName + " added.");
+            } else {
+                Timber.tag(TAG).d("No grocery list selected.");
+            }
+        }
+
+        public void deleteGroceryItem(String itemName) {
+            GroceryList groceryList = selectedGroceryList.getValue();
+            if (groceryList != null) {
+                groceryList.deleteGroceryItem(itemName);
+                Timber.tag(TAG).d(itemName + " deleted.");
+            } else {
+                Timber.tag(TAG).d("No grocery list selected.");
+            }
+        }
+
+    public void updateGroceryItem(String oldItem, String newItem) {
+        GroceryList groceryList = selectedGroceryList.getValue();
+        if (groceryList != null) {
+            groceryList.updateGroceryItem(oldItem, newItem);
+            Timber.tag(TAG).d(oldItem + " updated.");
+        } else {
+            Timber.tag(TAG).d("No grocery list selected.");
+        }
+    }
+
+
+
 }
