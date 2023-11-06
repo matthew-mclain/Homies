@@ -1,6 +1,4 @@
-package com.example.homies.viewmodel;
-
-import android.widget.ListView;
+package com.example.homies.model.viewmodel;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
@@ -8,7 +6,6 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.homies.MyApplication;
-import com.example.homies.R;
 import com.example.homies.model.GroceryList;
 import com.example.homies.model.GroceryItem;
 import com.google.android.gms.tasks.OnCompleteListener;
