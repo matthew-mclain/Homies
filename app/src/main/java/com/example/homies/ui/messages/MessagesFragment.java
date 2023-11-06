@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -18,7 +17,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.homies.R;
-import com.example.homies.model.GroupChat;
 import com.example.homies.model.Message;
 import com.example.homies.model.viewmodel.GroupChatViewModel;
 import com.example.homies.model.viewmodel.HouseholdViewModel;
@@ -71,7 +69,7 @@ public class MessagesFragment extends Fragment implements View.OnClickListener {
         groupChatViewModel = new ViewModelProvider(this).get(GroupChatViewModel.class);
 
         // Observe the selected household LiveData
-        householdViewModel.getSelectedHousehold().observe(getViewLifecycleOwner(), household -> {
+        householdViewModel.getSelectedHousehold(requireContext()).observe(getViewLifecycleOwner(), household -> {
             if (household != null) {
                 Timber.tag(TAG).d("Selected household observed: %s", household.getHouseholdId());
                 // Fetch messages for the selected household's group chat
