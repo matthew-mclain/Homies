@@ -1,6 +1,8 @@
 package com.example.homies;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
@@ -42,8 +44,9 @@ public class MainActivity extends AppCompatActivity {
     public BottomNavigationView bottomNavigationView;
     public ActionBarDrawerToggle actionBarDrawerToggle;
     private HouseholdViewModel householdViewModel;
-
     private static final String TAG = MainActivity.class.getSimpleName();
+    private static final String PREFERENCES = "MyPreferences";
+    private static final String SELECTED_HOUSEHOLD = "selectedHousehold";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,10 +78,21 @@ public class MainActivity extends AppCompatActivity {
             // Clear the items in the group_households group
             navMenu.removeGroup(R.id.group_households);
 
-            for (Household household : households) {
+            // Get the selected household ID from SharedPreferences
+            SharedPreferences preferences = getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
+            String selectedHouseholdId = preferences.getString(SELECTED_HOUSEHOLD, "");
+
+            //Add households to Navdrawer
+            for (int i = 0; i < households.size(); i++) {
+                Household household = households.get(i);
                 Timber.tag(TAG).d("Adding household: %s", household.getHouseholdName());
-                MenuItem menuItem = navMenu.add(R.id.group_households, Menu.NONE, Menu.NONE, household.getHouseholdName()).setCheckable(true);
+                MenuItem menuItem = navMenu.add(R.id.group_households, i, Menu.NONE, household.getHouseholdName()).setCheckable(true);
                 menuItem.setIcon(R.drawable.household_24);
+
+                // Check if the current household is the selected one and highlight it
+                if (selectedHouseholdId.equals(household.getHouseholdId())) {
+                    menuItem.setChecked(true);
+                }
             }
         });
 
@@ -121,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
                 showLeaveHouseholdDialog();
             } else if (item.getGroupId() == R.id.group_households) { //Household
                 String householdName = item.getTitle().toString();
-                viewModel.getHouseholdByName(householdName); // This will update the selectedHousehold LiveData
+                viewModel.getHouseholdByName(getApplicationContext(), householdName); // This will update the selectedHousehold LiveData
                 drawerLayout.closeDrawer(GravityCompat.START);
             } else if (id == R.id.navigation_sign_out) { //Sign Out
                 FirebaseAuth.getInstance().signOut();

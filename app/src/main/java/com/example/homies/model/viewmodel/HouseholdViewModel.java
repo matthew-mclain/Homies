@@ -1,9 +1,7 @@
 package com.example.homies.model.viewmodel;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -24,10 +22,10 @@ public class HouseholdViewModel extends ViewModel {
     private MutableLiveData<Household> selectedHousehold = new MutableLiveData<>();
     private static FirebaseFirestore db;
     private static final String TAG = HouseholdViewModel.class.getSimpleName();
+    private static final String PREFERENCES = "MyPreferences";
+    private static final String SELECTED_HOUSEHOLD = "selectedHousehold";
 
     public LiveData<List<Household>> getUserHouseholds(String userId) {
-        MutableLiveData<List<Household>> userHouseholdsLiveData = new MutableLiveData<>();
-
         db = MyApplication.getDbInstance();
         db.collection("households")
                 .whereArrayContains("householdUsers", userId)
@@ -37,20 +35,29 @@ public class HouseholdViewModel extends ViewModel {
                         return;
                     }
 
-                    List<Household> userHouseholds = new ArrayList<>();
+                    List<Household> households = new ArrayList<>();
                     for (QueryDocumentSnapshot document : value) {
                         Household household = document.toObject(Household.class);
-                        userHouseholds.add(household);
+                        households.add(household);
                     }
 
-                    userHouseholdsLiveData.setValue(userHouseholds);
+                    userHouseholds.setValue(households);
                 });
 
-        return userHouseholdsLiveData;
+        return userHouseholds;
     }
 
-    public LiveData<Household> getSelectedHousehold() {
+    public LiveData<Household> getSelectedHousehold(Context context) {
         Timber.tag(TAG).d("Getting selected household: %s", selectedHousehold);
+
+        // Retrieve the selected household ID from SharedPreferences
+        String selectedHouseholdId = getSelectedHouseholdIdFromPrefs(context);
+
+        // If the selected household ID is not null, fetch the corresponding household object and set it as the selected household LiveData
+        if (selectedHouseholdId != null) {
+            getHouseholdById(context, selectedHouseholdId);
+        }
+
         return selectedHousehold;
     }
 
@@ -59,29 +66,64 @@ public class HouseholdViewModel extends ViewModel {
         userHouseholds.setValue(households);
     }
 
-    public void setSelectedHousehold(Household household) {
+    public void setSelectedHousehold(Context context, Household household) {
         Timber.tag(TAG).d("Setting selected household: %s", selectedHousehold);
+        saveSelectedHouseholdIdToPrefs(context, household.getHouseholdId()); // Assuming getId() returns the unique identifier of the household
         selectedHousehold.setValue(household);
     }
 
-    public void getHouseholdByName(String householdName) {
+    // Save the selected household ID to SharedPreferences
+    private void saveSelectedHouseholdIdToPrefs(Context context, String householdId) {
+        SharedPreferences.Editor editor = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).edit();
+        editor.putString(SELECTED_HOUSEHOLD, householdId);
+        editor.apply();
+    }
+
+    // Get the selected household ID from SharedPreferences
+    private String getSelectedHouseholdIdFromPrefs(Context context) {
+        SharedPreferences preferences = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
+        return preferences.getString(SELECTED_HOUSEHOLD, null);
+    }
+
+    public void getHouseholdByName(Context context, String householdName) {
         db = MyApplication.getDbInstance();
         db.collection("households")
                 .whereEqualTo("householdName", householdName)
                 .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            Household household = document.toObject(Household.class);
-                            setSelectedHousehold(household);
-                            return; // Found the household, update LiveData and exit
-                        }
-                        // Household not found with the given name
-                        setSelectedHousehold(null);
-                    } else {
-                        // Handle failures
-                        setSelectedHousehold(null);
+                .addOnSuccessListener(querySnapshot -> {
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        Household household = document.toObject(Household.class);
+                        setSelectedHousehold(context, household);
+                        return; // Found the household, update LiveData and exit
                     }
+                    // Household not found with the given name
+                    setSelectedHousehold(context, null);
+                })
+                .addOnFailureListener(e -> {
+                    // Handle failures
+                    Timber.tag(TAG).e(e, "Error fetching household by name: %s", householdName);
+                    setSelectedHousehold(context, null);
+                });
+    }
+
+    private void getHouseholdById(Context context, String householdId) {
+        db = MyApplication.getDbInstance();
+        db.collection("households")
+                .document(householdId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    Household household = documentSnapshot.toObject(Household.class);
+                    if (household != null) {
+                        Timber.tag(TAG).d("Successfully retrieved household: %s", household.getHouseholdName());
+                        setSelectedHousehold(context, household);
+                    } else {
+                        // Handle the case where no household is found
+                        Timber.tag(TAG).d("No household found with ID: %s", householdId);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // Handle failure
+                    Timber.tag(TAG).e(e, "Error fetching household with ID: %s", householdId);
                 });
     }
 }
