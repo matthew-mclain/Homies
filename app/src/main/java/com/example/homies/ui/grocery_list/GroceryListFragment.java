@@ -5,6 +5,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -37,7 +39,6 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
     View view;
     private HouseholdViewModel householdViewModel;
     private GroceryListViewModel groceryListViewModel;
-//    String householdId = "DS12fLdiL8w8uijmj9BJ";    //change this to get householdId from view model later
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -45,22 +46,24 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
         Timber.tag(TAG).d("onCreateView()");
 
         itemET = view.findViewById(R.id.editTextGroceryItem);
-        itemDeleteET = view.findViewById(R.id.deleteTextGroceryItem);
-        itemOldET = view.findViewById(R.id.TextOldGroceryItem);
-        itemNewET = view.findViewById(R.id.TextNewGroceryItem);
+//        itemDeleteET = view.findViewById(R.id.deleteTextGroceryItem);
+//        itemOldET = view.findViewById(R.id.TextOldGroceryItem);
+//        itemNewET = view.findViewById(R.id.TextNewGroceryItem);
 
         final Button addItemButton = view.findViewById(R.id.addButton);
         if (addItemButton != null) {
             addItemButton.setOnClickListener(this);
         }
-        final Button deleteItemButton = view.findViewById(R.id.deleteButton);
-        if (deleteItemButton != null) {
-            deleteItemButton.setOnClickListener(this);
-        }
-        final Button updateItemButton = view.findViewById(R.id.updateButton);
-        if (updateItemButton != null) {
-            updateItemButton.setOnClickListener(this);
-        }
+
+
+//        final Button deleteItemButton = view.findViewById(R.id.deleteButton);
+//        if (deleteItemButton != null) {
+//            deleteItemButton.setOnClickListener(this);
+//        }
+//        final Button updateItemButton = view.findViewById(R.id.updateButton);
+//        if (updateItemButton != null) {
+//            updateItemButton.setOnClickListener(this);
+//        }
 
         recyclerViewGrocery = view.findViewById(R.id.recyclerViewGrocery);
 
@@ -120,26 +123,26 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
             adapter.notifyDataSetChanged();
             itemET.getText().clear();
         }
-        if (view.getId() == R.id.deleteButton) {
-            Timber.tag(TAG).d("delete");
-            String itemName = String.valueOf(itemDeleteET.getText());
-            groceryListViewModel.deleteGroceryItem(itemName);
-            groceryItemsArrayList.remove(itemName);
-            adapter.notifyDataSetChanged();
-            itemDeleteET.getText().clear();
-        }
+//        if (view.getId() == R.id.deleteButton) {
+//            Timber.tag(TAG).d("delete");
+//            String itemName = String.valueOf(itemDeleteET.getText());
+//            groceryListViewModel.deleteGroceryItem(itemName);
+//            groceryItemsArrayList.remove(itemName);
+//            adapter.notifyDataSetChanged();
+//            itemDeleteET.getText().clear();
+//        }
 
-        if (view.getId() == R.id.updateButton) {
-            Timber.tag(TAG).d("update");
-            String oldItem = String.valueOf(itemOldET.getText());
-            String newItem = String.valueOf(itemNewET.getText());
-            groceryListViewModel.updateGroceryItem(oldItem, newItem);
-            int index = groceryItemsArrayList.indexOf(oldItem);
-            groceryItemsArrayList.set(index, newItem);
-            adapter.notifyDataSetChanged();
-            itemOldET.getText().clear();
-            itemNewET.getText().clear();
-        }
+//        if (view.getId() == R.id.updateButton) {
+//            Timber.tag(TAG).d("update");
+//            String oldItem = String.valueOf(itemOldET.getText());
+//            String newItem = String.valueOf(itemNewET.getText());
+//            groceryListViewModel.updateGroceryItem(oldItem, newItem);
+//            int index = groceryItemsArrayList.indexOf(oldItem);
+//            groceryItemsArrayList.set(index, newItem);
+//            adapter.notifyDataSetChanged();
+//            itemOldET.getText().clear();
+//            itemNewET.getText().clear();
+//        }
 
     }
 
@@ -147,12 +150,12 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
     public void onResume() {
         super.onResume();
         itemET.getText().clear();
-        itemDeleteET.getText().clear();
-        itemOldET.getText().clear();
-        itemNewET.getText().clear();
+//        itemDeleteET.getText().clear();
+//        itemOldET.getText().clear();
+//        itemNewET.getText().clear();
     }
 
-    private static class GroceryAdapter extends RecyclerView.Adapter<GroceryAdapter.GroceryViewHolder> {
+    private class GroceryAdapter extends RecyclerView.Adapter<GroceryAdapter.GroceryViewHolder> {
         private List<String> groceryItems;
 
         public GroceryAdapter(List<String> groceryItems) {
@@ -169,7 +172,8 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
         @Override
         public void onBindViewHolder(@NonNull GroceryViewHolder holder, int position) {
             String item = groceryItems.get(position);
-            holder.itemTextView.setText(item);
+            holder.itemCheckBox.setText(item);
+            holder.itemCheckBox.setChecked(false);
         }
 
         @Override
@@ -177,11 +181,25 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
             return groceryItems.size();
         }
 
-        public static class GroceryViewHolder extends RecyclerView.ViewHolder {
-            TextView itemTextView;
+        public class GroceryViewHolder extends RecyclerView.ViewHolder {
+            CheckBox itemCheckBox;
             public GroceryViewHolder(@NonNull View itemView) {
                 super(itemView);
-                itemTextView = itemView.findViewById(R.id.itemTextView);
+                itemCheckBox = itemView.findViewById(R.id.itemCheckbox);
+                itemCheckBox.setChecked(false);
+                itemCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    if (isChecked) {
+                        String itemName = groceryItemsArrayList.get(getAdapterPosition());
+                        groceryListViewModel.deleteGroceryItem(itemName);
+                        groceryItemsArrayList.remove(getAdapterPosition());
+                        recyclerViewGrocery.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                adapter.notifyDataSetChanged();
+                            }
+                        });
+                    }
+                });
             }
         }
     }
