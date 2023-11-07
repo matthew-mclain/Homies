@@ -33,6 +33,7 @@ public class User {
         this.userId = userId;
 
         // Update the userId in Firestore
+        db = MyApplication.getDbInstance();
         db.collection("users")
                 .document(userId)
                 .update("userId", userId)
@@ -98,6 +99,9 @@ public class User {
     }
 
     public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+
+        //Update the displayName in Firestore
         db = MyApplication.getDbInstance();
         db.collection("users")
                 .document(userId)
@@ -105,9 +109,6 @@ public class User {
                 .addOnSuccessListener(aVoid -> {
                     // Display name updated successfully
                     Timber.tag(TAG).d("Display name updated to: %s", displayName);
-
-                    // Update the local displayName attribute
-                    this.displayName = displayName;
                 })
                 .addOnFailureListener(e -> {
                     // Handle errors
@@ -116,7 +117,7 @@ public class User {
     }
 
     public static void createUser (String userId, String email) {
-        User user = new User(email, null);
+        User user = new User(email, "");
 
         db = MyApplication.getDbInstance();
         db.collection("users")
