@@ -31,4 +31,8 @@
     <string name="leave_household">Leave Household</string>
     <string name="send_message">Send message...</string>
     <string name="send">Send</string>
+    <string name="display_name">Display Name</string>
+    <string name="no_display_name">No Display Name</string>
+    <string name="not_signed_in">Not Signed In</string>
+    <string name="user_icon">User Icon</string>
 </resources>

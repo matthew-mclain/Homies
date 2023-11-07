@@ -12,6 +12,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.homies.model.Household;
+import com.example.homies.model.User;
 import com.example.homies.model.viewmodel.HouseholdViewModel;
 import com.example.homies.ui.calendar.CalendarFragment;
 import com.example.homies.ui.grocery_list.GroceryListFragment;
@@ -19,15 +20,22 @@ import com.example.homies.ui.household.HouseholdActivity;
 import com.example.homies.ui.laundry.LaundryFragment;
 import com.example.homies.ui.location.LocationFragment;
 import com.example.homies.ui.messages.MessagesFragment;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -44,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     public BottomNavigationView bottomNavigationView;
     public ActionBarDrawerToggle actionBarDrawerToggle;
     private HouseholdViewModel householdViewModel;
+    private static FirebaseFirestore db;
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String PREFERENCES = "MyPreferences";
     private static final String SELECTED_HOUSEHOLD = "selectedHousehold";
@@ -57,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
         drawerLayout = findViewById(R.id.my_drawer_layout);
         navigationView = findViewById(R.id.nav_view);
+        updateNavDrawerHeader();
 
         // Initialize ActionBarDrawerToggle
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close);
@@ -200,5 +210,104 @@ public class MainActivity extends AppCompatActivity {
 
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
         builder.show();
+    }
+
+    private void showEditDisplayNameDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Edit Display Name");
+
+        // Set up the input
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        // Set up the buttons
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            String newDisplayName = input.getText().toString().trim();
+            // Update the display name in Firebase and update UI accordingly
+            updateDisplayName(newDisplayName);
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+
+    private void updateNavDrawerHeader() {
+        // Update the header view and set the user's display name
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        View headerView = navigationView.getHeaderView(0);
+        TextView textViewDisplayName = headerView.findViewById(R.id.textViewDisplayName);
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            // User is authenticated, set the display name
+            String displayName = currentUser.getDisplayName();
+            if (displayName != null && !displayName.isEmpty()) {
+                textViewDisplayName.setText(displayName);
+            } else {
+                // Handle the case where display name is null or empty
+                textViewDisplayName.setText(R.string.no_display_name);
+            }
+        }
+
+        // Set OnClickListener to the textViewDisplayName
+        textViewDisplayName.setOnClickListener(v -> {
+            // Show a dialog to prompt for a new display name
+            showEditDisplayNameDialog();
+        });
+    }
+
+    private void updateDisplayName(String newDisplayName) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            // Update FirebaseUser's displayName
+            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                    .setDisplayName(newDisplayName)
+                    .build();
+
+            currentUser.updateProfile(profileUpdates)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            getCurrentUserObject(currentUser.getUid(), user -> {
+                                if (user != null) {
+                                    user.setDisplayName(newDisplayName);
+                                    updateNavDrawerHeader();
+                                } else {
+                                    // Handle null user object
+                                    Timber.tag(TAG).e("User object is null");
+                                }
+                            });
+
+                        } else {
+                            // Handle update failure
+                            Timber.tag(TAG).e(task.getException(), "Error updating FirebaseUser's display name");
+                        }
+                    });
+        }
+    }
+
+    public interface UserCallback {
+        void onCallback(User user);
+    }
+
+    private void getCurrentUserObject(String userId, UserCallback callback) {
+        db = MyApplication.getDbInstance();
+        db.collection("users").document(userId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        User user = documentSnapshot.toObject(User.class);
+                        callback.onCallback(user);
+                    } else {
+                        // Document does not exist
+                        Timber.tag(TAG).e("User document not found for user ID: %s", userId);
+                        callback.onCallback(null);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // Handle Firestore query failure
+                    Timber.tag(TAG).e(e, "Error fetching user document for user ID: %s", userId);
+                    callback.onCallback(null);
+                });
     }
 }
