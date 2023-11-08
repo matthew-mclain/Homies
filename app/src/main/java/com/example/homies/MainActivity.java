@@ -1,6 +1,8 @@
 package com.example.homies;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
@@ -10,6 +12,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.homies.model.Household;
+import com.example.homies.model.User;
 import com.example.homies.model.viewmodel.HouseholdViewModel;
 import com.example.homies.ui.calendar.CalendarFragment;
 import com.example.homies.ui.grocery_list.GroceryListFragment;
@@ -17,15 +20,22 @@ import com.example.homies.ui.household.HouseholdActivity;
 import com.example.homies.ui.laundry.LaundryFragment;
 import com.example.homies.ui.location.LocationFragment;
 import com.example.homies.ui.messages.MessagesFragment;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -41,7 +51,11 @@ public class MainActivity extends AppCompatActivity {
     public NavigationView navigationView;
     public BottomNavigationView bottomNavigationView;
     public ActionBarDrawerToggle actionBarDrawerToggle;
-    private static final String TAG = Household.class.getSimpleName();
+    private HouseholdViewModel householdViewModel;
+    private static FirebaseFirestore db;
+    private static final String TAG = MainActivity.class.getSimpleName();
+    private static final String PREFERENCES = "MyPreferences";
+    private static final String SELECTED_HOUSEHOLD = "selectedHousehold";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
         drawerLayout = findViewById(R.id.my_drawer_layout);
         navigationView = findViewById(R.id.nav_view);
+        updateNavDrawerHeader();
 
         // Initialize ActionBarDrawerToggle
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close);
@@ -64,8 +79,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Observe the user's households from the ViewModel
-        HouseholdViewModel viewModel = new ViewModelProvider(this).get(HouseholdViewModel.class);
-        viewModel.getUserHouseholds(getCurrentUserId()).observe(this, households -> {
+        householdViewModel = new ViewModelProvider(this).get(HouseholdViewModel.class);
+        householdViewModel.getUserHouseholds(getCurrentUserId()).observe(this, households -> {
             // Update the navigation drawer menu with household names
             Timber.tag(TAG).d("Received user households: %s", households);
             Menu navMenu = navigationView.getMenu();
@@ -73,16 +88,22 @@ public class MainActivity extends AppCompatActivity {
             // Clear the items in the group_households group
             navMenu.removeGroup(R.id.group_households);
 
-            for (Household household : households) {
-                Timber.tag(TAG).d("Adding household: %s", household.getHouseholdName());
-                MenuItem menuItem = navMenu.add(R.id.group_households, Menu.NONE, Menu.NONE, household.getHouseholdName()).setCheckable(true);
-                menuItem.setIcon(R.drawable.household_24);
-            }
-        });
+            // Get the selected household ID from SharedPreferences
+            SharedPreferences preferences = getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
+            String selectedHouseholdId = preferences.getString(SELECTED_HOUSEHOLD, "");
 
-        // Observe the currently selected household
-        viewModel.getSelectedHousehold().observe(this, selectedHousehold -> {
-            //TODO: set fragments to display the correct model assigned to the selected household
+            //Add households to Navdrawer
+            for (int i = 0; i < households.size(); i++) {
+                Household household = households.get(i);
+                Timber.tag(TAG).d("Adding household: %s", household.getHouseholdName());
+                MenuItem menuItem = navMenu.add(R.id.group_households, i, Menu.NONE, household.getHouseholdName()).setCheckable(true);
+                menuItem.setIcon(R.drawable.household_24);
+
+                // Check if the current household is the selected one and highlight it
+                if (selectedHouseholdId.equals(household.getHouseholdId())) {
+                    menuItem.setChecked(true);
+                }
+            }
         });
 
         //Create new MessagesFragment
@@ -90,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Handle Navbar and Navdrawer Clicks
         handleNavbarClicks();
-        handleNavdrawerClicks(viewModel);
+        handleNavdrawerClicks(householdViewModel);
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
     }
@@ -124,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
                 showLeaveHouseholdDialog();
             } else if (item.getGroupId() == R.id.group_households) { //Household
                 String householdName = item.getTitle().toString();
-                viewModel.getHouseholdByName(householdName); // This will update the selectedHousehold LiveData
+                viewModel.getHouseholdByName(getApplicationContext(), householdName); // This will update the selectedHousehold LiveData
                 drawerLayout.closeDrawer(GravityCompat.START);
             } else if (id == R.id.navigation_sign_out) { //Sign Out
                 FirebaseAuth.getInstance().signOut();
@@ -189,5 +210,104 @@ public class MainActivity extends AppCompatActivity {
 
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
         builder.show();
+    }
+
+    private void showEditDisplayNameDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Edit Display Name");
+
+        // Set up the input
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        // Set up the buttons
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            String newDisplayName = input.getText().toString().trim();
+            // Update the display name in Firebase and update UI accordingly
+            updateDisplayName(newDisplayName);
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+
+    private void updateNavDrawerHeader() {
+        // Update the header view and set the user's display name
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        View headerView = navigationView.getHeaderView(0);
+        TextView textViewDisplayName = headerView.findViewById(R.id.textViewDisplayName);
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            // User is authenticated, set the display name
+            String displayName = currentUser.getDisplayName();
+            if (displayName != null && !displayName.isEmpty()) {
+                textViewDisplayName.setText(displayName);
+            } else {
+                // Handle the case where display name is null or empty
+                textViewDisplayName.setText(R.string.no_display_name);
+            }
+        }
+
+        // Set OnClickListener to the textViewDisplayName
+        textViewDisplayName.setOnClickListener(v -> {
+            // Show a dialog to prompt for a new display name
+            showEditDisplayNameDialog();
+        });
+    }
+
+    private void updateDisplayName(String newDisplayName) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            // Update FirebaseUser's displayName
+            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                    .setDisplayName(newDisplayName)
+                    .build();
+
+            currentUser.updateProfile(profileUpdates)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            getCurrentUserObject(currentUser.getUid(), user -> {
+                                if (user != null) {
+                                    user.setDisplayName(newDisplayName);
+                                    updateNavDrawerHeader();
+                                } else {
+                                    // Handle null user object
+                                    Timber.tag(TAG).e("User object is null");
+                                }
+                            });
+
+                        } else {
+                            // Handle update failure
+                            Timber.tag(TAG).e(task.getException(), "Error updating FirebaseUser's display name");
+                        }
+                    });
+        }
+    }
+
+    public interface UserCallback {
+        void onCallback(User user);
+    }
+
+    private void getCurrentUserObject(String userId, UserCallback callback) {
+        db = MyApplication.getDbInstance();
+        db.collection("users").document(userId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        User user = documentSnapshot.toObject(User.class);
+                        callback.onCallback(user);
+                    } else {
+                        // Document does not exist
+                        Timber.tag(TAG).e("User document not found for user ID: %s", userId);
+                        callback.onCallback(null);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // Handle Firestore query failure
+                    Timber.tag(TAG).e(e, "Error fetching user document for user ID: %s", userId);
+                    callback.onCallback(null);
+                });
     }
 }

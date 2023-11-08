@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/textViewDisplayNameReceived"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?attr/textAppearanceSubtitle2"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="4dp"
+        android:textColor="@color/grey"/>
+
+    <TextView
+        android:id="@+id/textViewMessageReceived"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textViewDisplayNameReceived"
+        android:textAppearance="?attr/textAppearanceBody2"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:textColor="#000000"
+        android:background="@drawable/chat_bubble_received"
+        android:gravity="center"/>
+
+    <TextView
+        android:id="@+id/textViewTimestampReceived"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textViewMessageReceived"
+        android:textAppearance="?attr/textAppearanceCaption"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="16dp"
+        android:textColor="@color/grey"/>
+
+</RelativeLayout>
+
+

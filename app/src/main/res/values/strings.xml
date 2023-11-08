@@ -29,6 +29,12 @@
     <string name="join">Join</string>
     <string name="create_join_household">Create/Join Household</string>
     <string name="leave_household">Leave Household</string>
+    <string name="send_message">Send message...</string>
+    <string name="send">Send</string>
+    <string name="display_name">Display Name</string>
+    <string name="no_display_name">No Display Name</string>
+    <string name="not_signed_in">Not Signed In</string>
+    <string name="user_icon">User Icon</string>
     <string name="mapbox_access_token">pk.eyJ1IjoiaGV5aHNpbmwiLCJhIjoiY2xvbjZqZjV3MmdmdTJycXQyd3Rtd3Y5dyJ9.rAewteRH9-Qp3PlHkXUOVA</string>
     <string name="show_location">Show Current Location</string>
 
