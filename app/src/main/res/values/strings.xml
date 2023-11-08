@@ -29,4 +29,7 @@
     <string name="join">Join</string>
     <string name="create_join_household">Create/Join Household</string>
     <string name="leave_household">Leave Household</string>
+    <string name="mapbox_access_token">pk.eyJ1IjoiaGV5aHNpbmwiLCJhIjoiY2xvbjZqZjV3MmdmdTJycXQyd3Rtd3Y5dyJ9.rAewteRH9-Qp3PlHkXUOVA</string>
+    <string name="show_location">Show Current Location</string>
+
 </resources>

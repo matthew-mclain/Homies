@@ -58,4 +58,7 @@ dependencies {
     //add other SDKs that we want to use later (https://firebase.google.com/docs/android/setup#available-libraries)
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
+    //Mapbox
+    implementation ("com.mapbox.maps:android:10.16.1")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 }
