@@ -64,6 +64,7 @@ public class GroupChatViewModel extends ViewModel {
     }
 
     private void fetchMessagesFromSubcollection(String groupChatId) {
+        db = MyApplication.getDbInstance();
         db.collection("group_chats")
                 .document(groupChatId)
                 .collection("messages")

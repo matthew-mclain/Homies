@@ -1,6 +1,7 @@
 package com.example.homies.ui.messages;
 
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,8 +23,11 @@ import com.example.homies.model.viewmodel.GroupChatViewModel;
 import com.example.homies.model.viewmodel.HouseholdViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import timber.log.Timber;
 
@@ -32,7 +36,7 @@ public class MessagesFragment extends Fragment implements View.OnClickListener {
     private Button sendButton;
     private EditText messageEditText;
     private RecyclerView recyclerViewChat;
-    private ArrayList<String> chatMessagesList = new ArrayList<>();
+    private ArrayList<Message> messagesList = new ArrayList<>();
     private ChatAdapter adapter;
     private HouseholdViewModel householdViewModel;
     private GroupChatViewModel groupChatViewModel;
@@ -47,10 +51,16 @@ public class MessagesFragment extends Fragment implements View.OnClickListener {
         recyclerViewChat = view.findViewById(R.id.recyclerViewChat);
 
         // Create an instance of the ChatAdapter
-        adapter = new ChatAdapter(chatMessagesList);
+        String currentUserId = FirebaseAuth.getInstance().getUid();
+        adapter = new ChatAdapter(messagesList, currentUserId);
+
+        // Set the layout manager for the RecyclerView
+        LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
+        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        layoutManager.setStackFromEnd(true); // Set stackFromEnd property to true
+        recyclerViewChat.setLayoutManager(layoutManager);
 
         // Set the adapter for the RecyclerView
-        recyclerViewChat.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerViewChat.setAdapter(adapter);
 
         // Set click listener for the send button
@@ -84,11 +94,8 @@ public class MessagesFragment extends Fragment implements View.OnClickListener {
             if (messages != null && !messages.isEmpty()) {
                 Timber.tag(TAG).d("Received messages: %s", messages.size());
                 // Clear existing messages and add the new messages to the adapter
-                chatMessagesList.clear();
-                for (Message message : messages) {
-                    Timber.tag(TAG).d("Adding message: %s", message.getMessageContent());
-                    chatMessagesList.add(message.getMessageContent());
-                }
+                messagesList.clear();
+                messagesList.addAll(messages);
                 adapter.notifyDataSetChanged();
             } else {
                 // Handle the case where no messages are available
@@ -115,39 +122,106 @@ public class MessagesFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-    private static class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder> {
-        private List<String> chatMessages;
+    private static class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        private List<Message> messages;
+        private String currentUserId;
+        private static final int VIEW_TYPE_SENT = 1;
+        private static final int VIEW_TYPE_RECEIVED = 2;
 
-        public ChatAdapter(List<String> chatMessages) {
-            this.chatMessages = chatMessages;
-        }
-
-        @NonNull
-        @Override
-        public ChatViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            // Create and return a new ChatViewHolder instance
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_message, parent, false);
-            return new ChatViewHolder(view);
+        public ChatAdapter(List<Message> messages, String currentUserId) {
+            this.messages = messages;
+            this.currentUserId = currentUserId;
         }
 
         @Override
-        public void onBindViewHolder(@NonNull ChatViewHolder holder, int position) {
-            // Bind data to the ChatViewHolder's views
-            String message = chatMessages.get(position);
-            holder.messageTextView.setText(message);
+        public int getItemViewType(int position) {
+            Message message = messages.get(position);
+            if (message.isSentByCurrentUser(currentUserId)) {
+                return VIEW_TYPE_SENT;
+            } else {
+                return VIEW_TYPE_RECEIVED;
+            }
         }
 
         @Override
         public int getItemCount() {
-            return chatMessages.size();
+            return messages.size();
         }
 
-        public static class ChatViewHolder extends RecyclerView.ViewHolder {
-            TextView messageTextView;
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+            View view;
+            switch (viewType) {
+                case VIEW_TYPE_SENT:
+                    view = inflater.inflate(R.layout.item_message_sent, parent, false);
+                    return new SentMessageViewHolder(view);
+                case VIEW_TYPE_RECEIVED:
+                    view = inflater.inflate(R.layout.item_message_received, parent, false);
+                    return new ReceivedMessageViewHolder(view);
+            }
+            return null;
+        }
 
-            public ChatViewHolder(@NonNull View itemView) {
+        @Override
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+            Message message = messages.get(position);
+            if (holder instanceof SentMessageViewHolder) {
+                ((SentMessageViewHolder) holder).bind(message);
+            } else if (holder instanceof ReceivedMessageViewHolder) {
+                ((ReceivedMessageViewHolder) holder).bind(message);
+            }
+        }
+
+        private static class SentMessageViewHolder extends RecyclerView.ViewHolder {
+            TextView displayName, message, timestamp;
+
+            SentMessageViewHolder(View itemView) {
                 super(itemView);
-                messageTextView = itemView.findViewById(R.id.textViewMessage);
+                displayName = itemView.findViewById(R.id.textViewDisplayNameSent);
+                message = itemView.findViewById(R.id.textViewMessageSent);
+                timestamp = itemView.findViewById(R.id.textViewTimestampSent);
+            }
+
+            void bind(Message message) {
+                message.getSenderDisplayName(displayName -> {
+                    if (displayName != null) {
+                        this.displayName.setText(displayName);
+                        this.message.setText(message.getMessageContent());
+
+                        // Format timestamp to a human-readable date and time with AM/PM indicators
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault());
+                        String formattedDate = dateFormat.format(new Date(message.getTimestamp()));
+
+                        timestamp.setText(formattedDate);
+                    }
+                });
+            }
+        }
+
+        private static class ReceivedMessageViewHolder extends RecyclerView.ViewHolder {
+            TextView displayName, message, timestamp;
+
+            ReceivedMessageViewHolder(View itemView) {
+                super(itemView);
+                displayName = itemView.findViewById(R.id.textViewDisplayNameReceived);
+                message = itemView.findViewById(R.id.textViewMessageReceived);
+                timestamp = itemView.findViewById(R.id.textViewTimestampReceived);
+            }
+
+            void bind(Message message) {
+                message.getSenderDisplayName(displayName -> {
+                    if (displayName != null) {
+                        this.displayName.setText(displayName);
+                        this.message.setText(message.getMessageContent());
+
+                        // Format timestamp to a human-readable date and time with AM/PM indicators
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault());
+                        String formattedDate = dateFormat.format(new Date(message.getTimestamp()));
+
+                        timestamp.setText(formattedDate);
+                    }
+                });
             }
         }
     }
