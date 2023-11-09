@@ -90,11 +90,49 @@ public class GroupChatViewModel extends ViewModel {
 
     public void addMessage(String senderUserId, String messageContent, long timestamp) {
         GroupChat groupChat = selectedGroupChat.getValue();
-        if (groupChat != null) {
-            groupChat.addMessage(senderUserId, messageContent, timestamp);
-            Timber.tag(TAG).d("Message added.");
+        String householdId = groupChat.getHouseholdId();
+        if (householdId != null) {
+            Message message = new Message(senderUserId, messageContent, timestamp);
+
+            db = MyApplication.getDbInstance();
+            db.collection("group_chats")
+                    .whereEqualTo("householdId", householdId)
+                    .get()
+                    .addOnSuccessListener(queryDocumentSnapshots -> {
+                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                            String groupChatId = documentSnapshot.getId();
+
+                            // Add the new message to the "messages" subcollection
+                            db.collection("group_chats")
+                                    .document(groupChatId)
+                                    .collection("messages")
+                                    .add(message)
+                                    .addOnSuccessListener(documentReference -> {
+                                        // Message added to the subcollection successfully
+                                        Timber.tag(TAG).d("Message added to subcollection successfully: %s", documentReference.getId());
+
+                                        // Update selectedMessages LiveData with the new message
+                                        List<Message> currentMessages = selectedMessages.getValue();
+                                        if (currentMessages == null) {
+                                            currentMessages = new ArrayList<>();
+                                        }
+                                        currentMessages.add(message);
+                                        selectedMessages.setValue(currentMessages);
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        // Handle errors
+                                        Timber.tag(TAG).e(e, "Failed to add message to subcollection: %s", householdId);
+                                    });
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle errors
+                        Timber.tag(TAG).e(e, "Failed to query group chats: %s", householdId);
+                    });
+
         } else {
-            Timber.tag(TAG).d("No group chat selected.");
+            // Handle the case where no household is selected
+            Timber.tag(TAG).d("No household selected.");
         }
     }
 }

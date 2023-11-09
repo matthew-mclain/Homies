@@ -18,6 +18,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.homies.R;
+import com.example.homies.model.GroceryItem;
+import com.example.homies.model.GroupChat;
 import com.example.homies.model.Message;
 import com.example.homies.model.viewmodel.GroupChatViewModel;
 import com.example.homies.model.viewmodel.HouseholdViewModel;
@@ -97,6 +99,9 @@ public class MessagesFragment extends Fragment implements View.OnClickListener {
                 messagesList.clear();
                 messagesList.addAll(messages);
                 adapter.notifyDataSetChanged();
+
+                // Scroll RecyclerView to the last position after updating the adapter
+                recyclerViewChat.scrollToPosition(adapter.getItemCount() - 1);
             } else {
                 // Handle the case where no messages are available
                 Timber.tag(TAG).d("No messages available.");
@@ -113,8 +118,9 @@ public class MessagesFragment extends Fragment implements View.OnClickListener {
 
             if (!messageContent.trim().isEmpty()) {
                 groupChatViewModel.addMessage(senderUserId, messageContent, timestamp);
+
                 // Clear the messageEditText after sending the message
-                messageEditText.setText("");
+                messageEditText.getText().clear();
             } else {
                 // Handle the case where the message content is empty
                 Toast.makeText(requireContext(), "Message cannot be empty", Toast.LENGTH_SHORT).show();
