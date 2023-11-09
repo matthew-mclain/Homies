@@ -84,11 +84,12 @@ public class Household {
                     household.addUser(userId);
                     household.updateHouseholdInFirestore();
 
-                    // Create GroupChat, GroceryList, LaundryManager, Calendar
+                    // Create GroupChat, GroceryList, LaundryManager, Calendar, and LocationManager
                     GroupChat.createGroupChat(householdId);
                     GroceryList.createGroceryList(householdId);
                     LaundryManager.createLaundryManager(householdId);
                     Calendar.createCalendar(householdId);
+                    LocationManager.createLocationManager(householdId);
 
                 })
                 .addOnFailureListener(e -> {

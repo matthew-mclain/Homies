@@ -59,7 +59,7 @@ public class GroceryListViewModel extends ViewModel {
                             fetchGroceryItems(groceryListId);
                         } else {
                             // Handle failures
-                            Timber.tag(TAG).e(task.getException(), "Error fetching group chat for householdId: %s", householdId);
+                            Timber.tag(TAG).e(task.getException(), "Error fetching grocery list for householdId: %s", householdId);
                         }
                     }
                 });
@@ -67,55 +67,55 @@ public class GroceryListViewModel extends ViewModel {
 
 
 
-        private void fetchGroceryItems(String groceryListId) {
-                db.collection("grocery_lists")
-                        .document(groceryListId)
-                        .collection("grocery_items")
-                        .get()
-                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                            @Override
-                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                                if (!queryDocumentSnapshots.isEmpty()) {
-                                    List<DocumentSnapshot> list = queryDocumentSnapshots.getDocuments();
-                                    List<GroceryItem> items = new ArrayList<>();
-                                    for (DocumentSnapshot d : list) {
-                                        Timber.tag(TAG).d("groceryItem: " + d.getData().get("itemName"));
-                                        GroceryItem item = d.toObject(GroceryItem.class);
-                                        items.add(item);
-                                    }
-                                    setSelectedItems(items);
-                                } else {
-                                    Timber.tag(TAG).d("No data found in Database");
-                                    selectedItems.setValue(null);
+    private void fetchGroceryItems(String groceryListId) {
+            db.collection("grocery_lists")
+                    .document(groceryListId)
+                    .collection("grocery_items")
+                    .get()
+                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                        @Override
+                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                            if (!queryDocumentSnapshots.isEmpty()) {
+                                List<DocumentSnapshot> list = queryDocumentSnapshots.getDocuments();
+                                List<GroceryItem> items = new ArrayList<>();
+                                for (DocumentSnapshot d : list) {
+                                    Timber.tag(TAG).d("groceryItem: " + d.getData().get("itemName"));
+                                    GroceryItem item = d.toObject(GroceryItem.class);
+                                    items.add(item);
                                 }
+                                setSelectedItems(items);
+                            } else {
+                                Timber.tag(TAG).d("No data found in Database");
+                                selectedItems.setValue(null);
                             }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Timber.tag(TAG).d("Fail to load data");
-                            }
-                        });
-        }
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Timber.tag(TAG).d("Fail to load data");
+                        }
+                    });
+    }
 
-        public void addGroceryItem(String itemName) {
-            GroceryList groceryList = selectedGroceryList.getValue();
-            if (groceryList != null) {
-                groceryList.addGroceryItem(itemName);
-                Timber.tag(TAG).d(itemName + " added.");
-            } else {
-                Timber.tag(TAG).d("No grocery list selected.");
-            }
+    public void addGroceryItem(String itemName) {
+        GroceryList groceryList = selectedGroceryList.getValue();
+        if (groceryList != null) {
+            groceryList.addGroceryItem(itemName);
+            Timber.tag(TAG).d(itemName + " added.");
+        } else {
+            Timber.tag(TAG).d("No grocery list selected.");
         }
+    }
 
-        public void deleteGroceryItem(String itemName) {
-            GroceryList groceryList = selectedGroceryList.getValue();
-            if (groceryList != null) {
-                groceryList.deleteGroceryItem(itemName);
-                Timber.tag(TAG).d(itemName + " deleted.");
-            } else {
-                Timber.tag(TAG).d("No grocery list selected.");
-            }
+    public void deleteGroceryItem(String itemName) {
+        GroceryList groceryList = selectedGroceryList.getValue();
+        if (groceryList != null) {
+            groceryList.deleteGroceryItem(itemName);
+            Timber.tag(TAG).d(itemName + " deleted.");
+        } else {
+            Timber.tag(TAG).d("No grocery list selected.");
         }
+    }
 
     public void updateGroceryItem(String oldItem, String newItem) {
         GroceryList groceryList = selectedGroceryList.getValue();

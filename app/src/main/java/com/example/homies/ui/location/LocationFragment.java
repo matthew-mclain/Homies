@@ -15,8 +15,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.homies.R;
+import com.example.homies.model.GroceryItem;
+import com.example.homies.model.Location;
+import com.example.homies.model.viewmodel.GroceryListViewModel;
+import com.example.homies.model.viewmodel.HouseholdViewModel;
+import com.example.homies.model.viewmodel.LocationViewModel;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.android.gestures.MoveGestureDetector;
@@ -36,12 +42,23 @@ import com.mapbox.maps.plugin.locationcomponent.OnIndicatorBearingChangedListene
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener;
 import com.mapbox.maps.plugin.locationcomponent.generated.LocationComponentSettings;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import timber.log.Timber;
 
+/*
+ * Adapted from Dr.Champion's TicTacToe app.
+ */
 public class LocationFragment extends Fragment implements PermissionsListener, OnIndicatorBearingChangedListener, OnIndicatorPositionChangedListener,
         OnMoveListener, OnStyleDataLoadedListener {
 
@@ -51,9 +68,12 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
     private LocationComponentPlugin mLocationPlugin;
     private GesturesPlugin mGesturesPlugin;
     private final String TAG = getClass().getSimpleName();
+    ArrayList<Location> locationsArrayList = new ArrayList<>();
+    private HouseholdViewModel householdViewModel;
+    private LocationViewModel locationViewModel;
+    private long lastTime;
 
-    @Nullable
-    @Override
+
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         setHasOptionsMenu(true);
@@ -65,6 +85,40 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         setupMap(mMapboxMap);
 
         return v;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        Timber.tag(TAG).d("onViewCreated()");
+
+        //Initialize ViewModel instances
+        householdViewModel = new ViewModelProvider(requireActivity()).get(HouseholdViewModel.class);
+        locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+
+        //Observe the selected household LiveData
+        householdViewModel.getSelectedHousehold(requireContext()).observe(getViewLifecycleOwner(), household -> {
+            if (household != null) {
+                Timber.tag(TAG).d("Selected household observed: %s", household.getHouseholdId());
+                // Fetch messages for the selected household's group chat
+                locationViewModel.getLocationsFromLocationManager(household.getHouseholdId());
+            } else {
+                Timber.tag(TAG).d("No household selected.");
+            }
+        });
+
+        //Observe the locations LiveData
+        locationViewModel.getSelectedLocations().observe(getViewLifecycleOwner(), locations -> {
+            if (locations != null && !locations.isEmpty()) {
+                Timber.tag(TAG).d("Locations: " + locations.size());
+                locationsArrayList.clear();
+                for (Location location: locations) {
+                    locationsArrayList.add(location);
+                }
+            } else {
+                Timber.tag(TAG).d("No locations");
+            }
+        });
     }
 
     @Override
@@ -135,8 +189,8 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         final Activity activity = requireActivity();
         if (mLocationPuck == null) {
             mLocationPuck = new LocationPuck2D();
-            mLocationPuck.setBearingImage(AppCompatResources.getDrawable(activity, R.drawable.location_24));
-            mLocationPuck.setShadowImage(AppCompatResources.getDrawable(activity, R.drawable.location_24));
+//            mLocationPuck.setBearingImage(AppCompatResources.getDrawable(activity, R.drawable.location_24));
+//            mLocationPuck.setShadowImage(AppCompatResources.getDrawable(activity, R.drawable.location_24));
         }
 
         mLocationPlugin = mMapView.getPlugin(Plugin.MAPBOX_LOCATION_COMPONENT_PLUGIN_ID);
@@ -145,7 +199,7 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
                 @Override
                 public Unit invoke(LocationComponentSettings locationComponentSettings) {
                     locationComponentSettings.setEnabled(true);
-                    locationComponentSettings.setLocationPuck(mLocationPuck);
+//                    locationComponentSettings.setLocationPuck(mLocationPuck);
                     return null;
                 }
             });
@@ -187,6 +241,9 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         CameraOptions.Builder builder = new CameraOptions.Builder();
         map.setCamera(builder.center(point).build());
         mGesturesPlugin.setFocalPoint(map.pixelForCoordinate(point));
+
+        //TODO: save location to database
+        Timber.tag(TAG).d("longitude: " + point.longitude() + " latitude: " + point.latitude());
     }
 
     @Override
