@@ -40,44 +40,4 @@ public class GroupChat {
                     Timber.tag(TAG).e(e, "Error creating group chat");
                 });
     }
-
-    public void addMessage(String senderUserId, String messageContent, long timestamp) {
-        if (householdId != null) {
-            // Create a new message
-            Message message = new Message(senderUserId, messageContent, timestamp);
-
-            // Add the new message to the "messages" subcollection within the group chat
-            db = MyApplication.getDbInstance();
-            db.collection("group_chats")
-                    .whereEqualTo("householdId", householdId)
-                    .get()
-                    .addOnSuccessListener(queryDocumentSnapshots -> {
-                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                            String groupChatId = documentSnapshot.getId();
-
-                            // Add the new message to the "messages" subcollection
-                            db.collection("group_chats")
-                                    .document(groupChatId)
-                                    .collection("messages")
-                                    .add(message)
-                                    .addOnSuccessListener(documentReference -> {
-                                        // Message added to the subcollection successfully
-                                        Timber.tag(TAG).d("Message added to subcollection successfully: %s", documentReference.getId());
-                                    })
-                                    .addOnFailureListener(e -> {
-                                        // Handle errors
-                                        Timber.tag(TAG).e(e, "Failed to add message to subcollection: %s", householdId);
-                                    });
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        // Handle errors
-                        Timber.tag(TAG).e(e, "Failed to query group chats: %s", householdId);
-                    });
-
-        } else {
-            // Handle the case where no household is selected
-            Timber.tag(TAG).d("No household selected.");
-        }
-    }
 }
