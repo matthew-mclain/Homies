@@ -72,13 +72,15 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
     ArrayList<Location> locationsArrayList = new ArrayList<>();
     private HouseholdViewModel householdViewModel;
     private LocationViewModel locationViewModel;
-    private long lastTime;
+    private String currentLatitude;
+    private String currentLongitude;
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private static final long UPDATE_INTERVAL = 5; // 5 minutes
 
 
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
+        Timber.tag(TAG).d("onCreateView()");
         setHasOptionsMenu(true);
 
         View v = inflater.inflate(R.layout.fragment_location, container, false);
@@ -89,9 +91,11 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
 
         // Request location permissions when the fragment is created
         if (!PermissionsManager.areLocationPermissionsGranted(requireContext())) {
+            Timber.tag(TAG).d("Requesting permissions...");
             mPermissionsManager.requestLocationPermissions(requireActivity());
         } else {
             // Permissions are already granted, start location updates
+            Timber.tag(TAG).d("Permissions already granted.");
             startLocationUpdates();
         }
 
@@ -251,8 +255,8 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         map.setCamera(builder.center(point).build());
         mGesturesPlugin.setFocalPoint(map.pixelForCoordinate(point));
 
-        //TODO: save location to database
-        Timber.tag(TAG).d("longitude: " + point.longitude() + " latitude: " + point.latitude());
+        currentLatitude = String.valueOf(point.latitude());
+        currentLongitude = String.valueOf(point.longitude());
     }
 
     @Override
@@ -274,28 +278,25 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
     }
 
     private void saveLocationToDatabase() {
-        if (locationsArrayList != null && !locationsArrayList.isEmpty()) {
-            // Get the last known location from the list of locations
-            Location lastKnownLocation = locationsArrayList.get(locationsArrayList.size() - 1);
+        Timber.tag(TAG).d("Saving location to database...");
 
-            String latitude = lastKnownLocation.getLatitude();
-            String longitude = lastKnownLocation.getLongitude();
-            String userId = lastKnownLocation.getUserId();
+        String userId = FirebaseAuth.getInstance().getUid();
+        if (userId != null) {
+            String latitude = currentLatitude;
+            String longitude = currentLongitude;
 
+            // Check if the location exists in Firestore
             locationViewModel.checkIfLocationExists(userId).observe(getViewLifecycleOwner(), locationExists -> {
                 if (locationExists) {
                     Timber.tag(TAG).d("Location already exists. Updating location...");
-                    // Handle the case where the location already exists (e.g., update the existing location)
                     locationViewModel.updateLocation(longitude, latitude, userId);
                 } else {
                     Timber.tag(TAG).d("Location doesn't exist. Adding new location...");
-                    // Handle the case where the location doesn't exist (e.g., add the new location to the database)
                     locationViewModel.addLocation(longitude, latitude, userId);
                 }
             });
-
         } else {
-            Timber.tag(TAG).d("No location data available to save.");
+            Timber.tag(TAG).d("User ID is null. Unable to save location.");
         }
     }
 

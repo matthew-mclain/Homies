@@ -103,7 +103,7 @@ public class LocationViewModel extends ViewModel {
 
     public void addLocation(String longitude, String latitude, String userId) {
         LocationManager locationManager = selectedLocationManager.getValue();
-        if(locationManager != null) {
+        if (locationManager != null) {
             locationManager.addLocation(longitude, latitude, userId);
             Timber.tag(TAG).d("%s's location added.", userId);
         } else {
@@ -132,6 +132,8 @@ public class LocationViewModel extends ViewModel {
     }
 
     public LiveData<Boolean> checkIfLocationExists(String userId) {
+        Timber.tag(TAG).d("Checking if location exists...");
+
         MutableLiveData<Boolean> locationExistsLiveData = new MutableLiveData<>();
         db.collection("locations")
                 .whereEqualTo("userId", userId)
@@ -146,6 +148,7 @@ public class LocationViewModel extends ViewModel {
                     Timber.e(e, "Failed to check if location exists.");
                     locationExistsLiveData.setValue(false);
                 });
+
         return locationExistsLiveData;
     }
 
