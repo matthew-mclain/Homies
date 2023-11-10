@@ -83,7 +83,7 @@ public class LocationViewModel extends ViewModel {
                             List<DocumentSnapshot> list = queryDocumentSnapshots.getDocuments();
                             List<Location> locations = new ArrayList<>();
                             for (DocumentSnapshot d : list) {
-                                Timber.tag(TAG).d("locations: " + d.getData().get("userId"));
+                                Timber.tag(TAG).d("locations: %s", d.getData().get("userId"));
                                 Location location = d.toObject(Location.class);
                                 locations.add(location);
                             }
@@ -105,7 +105,17 @@ public class LocationViewModel extends ViewModel {
         LocationManager locationManager = selectedLocationManager.getValue();
         if(locationManager != null) {
             locationManager.addLocation(longitude, latitude, userId);
-            Timber.tag(TAG).d(userId+ "'s location added.");
+            Timber.tag(TAG).d("%s's location added.", userId);
+        } else {
+            Timber.tag(TAG).d("No location manager selected");
+        }
+    }
+
+    public void updateLocation(String longitude, String latitude, String userId) {
+        LocationManager locationManager = selectedLocationManager.getValue();
+        if(locationManager != null) {
+            locationManager.updateLocation(longitude, latitude, userId);
+            Timber.tag(TAG).d("%s's location updated.", userId);
         } else {
             Timber.tag(TAG).d("No location manager selected");
         }
@@ -115,10 +125,28 @@ public class LocationViewModel extends ViewModel {
         LocationManager locationManager = selectedLocationManager.getValue();
         if (locationManager != null) {
             locationManager.deleteLocation(userId);
-            Timber.tag(TAG).d(userId+ "'s location deleted.");
+            Timber.tag(TAG).d("%s's location deleted.", userId);
         } else {
             Timber.tag(TAG).d("No location manager selected");
         }
+    }
+
+    public LiveData<Boolean> checkIfLocationExists(String userId) {
+        MutableLiveData<Boolean> locationExistsLiveData = new MutableLiveData<>();
+        db.collection("locations")
+                .whereEqualTo("userId", userId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    // Check if the query result is not empty
+                    boolean locationExists = !queryDocumentSnapshots.isEmpty();
+                    locationExistsLiveData.setValue(locationExists);
+                })
+                .addOnFailureListener(e -> {
+                    // Handle errors
+                    Timber.e(e, "Failed to check if location exists.");
+                    locationExistsLiveData.setValue(false);
+                });
+        return locationExistsLiveData;
     }
 
 }

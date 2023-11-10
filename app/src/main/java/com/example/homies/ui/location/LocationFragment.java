@@ -23,6 +23,7 @@ import com.example.homies.model.Location;
 import com.example.homies.model.viewmodel.GroceryListViewModel;
 import com.example.homies.model.viewmodel.HouseholdViewModel;
 import com.example.homies.model.viewmodel.LocationViewModel;
+import com.google.firebase.auth.FirebaseAuth;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.android.gestures.MoveGestureDetector;
@@ -67,11 +68,13 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
     private LocationPuck2D mLocationPuck;
     private LocationComponentPlugin mLocationPlugin;
     private GesturesPlugin mGesturesPlugin;
-    private final String TAG = getClass().getSimpleName();
+    private static final String TAG = LocationFragment.class.getSimpleName();
     ArrayList<Location> locationsArrayList = new ArrayList<>();
     private HouseholdViewModel householdViewModel;
     private LocationViewModel locationViewModel;
     private long lastTime;
+    private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+    private static final long UPDATE_INTERVAL = 5; // 5 minutes
 
 
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -83,6 +86,14 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         mMapView = (MapView) v.findViewById(R.id.mapView);
         MapboxMap mMapboxMap = mMapView.getMapboxMap();
         setupMap(mMapboxMap);
+
+        // Request location permissions when the fragment is created
+        if (!PermissionsManager.areLocationPermissionsGranted(requireContext())) {
+            mPermissionsManager.requestLocationPermissions(requireActivity());
+        } else {
+            // Permissions are already granted, start location updates
+            startLocationUpdates();
+        }
 
         return v;
     }
@@ -110,11 +121,9 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         //Observe the locations LiveData
         locationViewModel.getSelectedLocations().observe(getViewLifecycleOwner(), locations -> {
             if (locations != null && !locations.isEmpty()) {
-                Timber.tag(TAG).d("Locations: " + locations.size());
+                Timber.tag(TAG).d("Locations: %s", locations.size());
                 locationsArrayList.clear();
-                for (Location location: locations) {
-                    locationsArrayList.add(location);
-                }
+                locationsArrayList.addAll(locations);
             } else {
                 Timber.tag(TAG).d("No locations");
             }
@@ -153,6 +162,7 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         MapboxMap map = mMapView.getMapboxMap();
         map.removeOnStyleDataLoadedListener(this);
         mMapView = null;
+        executorService.shutdown();
     }
 
     @Override
@@ -164,13 +174,12 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
     @Override
     public void onPermissionResult(boolean granted) {
         if (granted) {
-            Timber.d(TAG, "Location permission granted");
+            Timber.tag(TAG).d("Location permission granted");
             Toast.makeText(requireContext(), "User granted location permission", Toast.LENGTH_SHORT).show();
-            initLocation();
-            setupGesturesListener();
+            startLocationUpdates();
         } else {
             Timber.d(TAG, "User denied location permission");
-            Toast.makeText(requireContext(), "User granted location permission", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "User denied location permission", Toast.LENGTH_SHORT).show();
             onCameraTrackingDismissed();
         }
     }
@@ -261,6 +270,39 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         }
         if (mGesturesPlugin != null) {
             mGesturesPlugin.removeOnMoveListener(this);
+        }
+    }
+
+    private void saveLocationToDatabase() {
+        if (locationsArrayList != null && !locationsArrayList.isEmpty()) {
+            // Get the last known location from the list of locations
+            Location lastKnownLocation = locationsArrayList.get(locationsArrayList.size() - 1);
+
+            String latitude = lastKnownLocation.getLatitude();
+            String longitude = lastKnownLocation.getLongitude();
+            String userId = lastKnownLocation.getUserId();
+
+            locationViewModel.checkIfLocationExists(userId).observe(getViewLifecycleOwner(), locationExists -> {
+                if (locationExists) {
+                    Timber.tag(TAG).d("Location already exists. Updating location...");
+                    // Handle the case where the location already exists (e.g., update the existing location)
+                    locationViewModel.updateLocation(longitude, latitude, userId);
+                } else {
+                    Timber.tag(TAG).d("Location doesn't exist. Adding new location...");
+                    // Handle the case where the location doesn't exist (e.g., add the new location to the database)
+                    locationViewModel.addLocation(longitude, latitude, userId);
+                }
+            });
+
+        } else {
+            Timber.tag(TAG).d("No location data available to save.");
+        }
+    }
+
+    private void startLocationUpdates() {
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.scheduleAtFixedRate(this::saveLocationToDatabase, 0, UPDATE_INTERVAL, TimeUnit.MINUTES);
+            Timber.tag(TAG).d("Location updates started.");
         }
     }
 }
