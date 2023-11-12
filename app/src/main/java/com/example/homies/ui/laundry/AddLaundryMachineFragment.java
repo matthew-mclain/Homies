@@ -10,7 +10,9 @@ import android.widget.EditText;
 import androidx.fragment.app.Fragment;
 
 import com.example.homies.R;
-import com.example.homies.model.Laundry;
+import com.example.homies.model.LaundryList;
+import com.example.homies.model.viewmodel.HouseholdViewModel;
+import com.example.homies.model.viewmodel.LaundryViewModel;
 
 import timber.log.Timber;
 
@@ -21,15 +23,26 @@ public class AddLaundryMachineFragment extends Fragment implements View.OnClickL
 
     private final String TAG = getClass().getSimpleName();
 
+    private LaundryViewModel laundryViewModel;
+
+    public AddLaundryMachineFragment(LaundryViewModel laundryViewModel){
+        this.laundryViewModel = laundryViewModel;
+    }
+
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         view = inflater.inflate(R.layout.fragment_add_laundry_manchine, container, false);
         Timber.tag(TAG).d("onCreateView()");
 
         machineNameET = view.findViewById(R.id.editTextMachineNameToAdd);
 
-        final Button addMachineButton = view.findViewById(R.id.startMachineButton);
+        final Button addMachineButton = view.findViewById(R.id.addMachineButton);
         if (addMachineButton != null){
             addMachineButton.setOnClickListener(this);
+        }
+
+        final Button cancelButton = view.findViewById(R.id.cancelAddMachineButton);
+        if (cancelButton != null){
+            cancelButton.setOnClickListener(this);
         }
 
         return view;
@@ -38,18 +51,17 @@ public class AddLaundryMachineFragment extends Fragment implements View.OnClickL
     public void onClick(View v) {
         Timber.tag(TAG).d("onClick()");
 
-        if(v.getId() == R.id.startMachineButton){
+        if(v.getId() == R.id.addMachineButton){
             Timber.tag(TAG).d("add machine");
             String machineName = machineNameET.getText().toString();
-            Laundry machine = new Laundry("123", machineName);
-            machine.createMachine("123", machineName);
+            laundryViewModel.addLaundryMachine(machineName);
 
             //change fragment
-            getActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.nav_host_fragment, new LaundryFragment())
-                    .addToBackStack(null)
-                    .commit();
+            getActivity().getSupportFragmentManager().popBackStack();
 
+        } else if (v.getId() == R.id.cancelAddMachineButton){
+            //change fragment
+            getActivity().getSupportFragmentManager().popBackStack();
         }
     }
 }

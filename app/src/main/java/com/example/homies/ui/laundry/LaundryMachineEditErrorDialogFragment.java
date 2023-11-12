@@ -7,12 +7,12 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 
-public class LaundryMachineDeleteErrorDialogFragment extends DialogFragment {
+public class LaundryMachineEditErrorDialogFragment extends DialogFragment {
 
 
     int type;
 
-    public LaundryMachineDeleteErrorDialogFragment(int type) {
+    public LaundryMachineEditErrorDialogFragment(int type) {
         this.type = type;
     }
     @Override
@@ -24,6 +24,15 @@ public class LaundryMachineDeleteErrorDialogFragment extends DialogFragment {
                 result = new AlertDialog.Builder(requireActivity())
                         .setTitle("Laundry Function Error")
                         .setMessage("Cannot delete a machine that is currently being used. " +
+                                "Please try again after finishing using it.")
+                        .setPositiveButton("OK",
+                                ((dialog, which) -> {
+                                })).create();
+                break;
+            case 1:
+                result = new AlertDialog.Builder(requireActivity())
+                        .setTitle("Laundry Function Error")
+                        .setMessage("Cannot edit a machine that is currently being used. " +
                                 "Please try again after finishing using it.")
                         .setPositiveButton("OK",
                                 ((dialog, which) -> {

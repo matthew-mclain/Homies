@@ -10,6 +10,8 @@ import android.widget.EditText;
 import androidx.fragment.app.Fragment;
 
 import com.example.homies.R;
+import com.example.homies.model.Machine;
+import com.example.homies.model.viewmodel.LaundryViewModel;
 
 import timber.log.Timber;
 
@@ -19,12 +21,20 @@ public class EditLaundryMachineFragment  extends Fragment implements View.OnClic
     EditText machineNameET;
 
     private final String TAG = getClass().getSimpleName();
+    LaundryViewModel laundryViewModel;
+    Machine machine;
+
+    public EditLaundryMachineFragment(LaundryViewModel laundryViewModel, Machine machine) {
+        this.laundryViewModel = laundryViewModel;
+        this.machine = machine;
+    }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         view = inflater.inflate(R.layout.fragment_edit_laundry_machine, container, false);
         Timber.tag(TAG).d("onCreateView()");
 
         machineNameET = view.findViewById(R.id.editTextMachineNameToEdit);
+        machineNameET.setText(machine.getName());
 
         final Button applyButton = view.findViewById(R.id.applyMachineEditButton);
         if (applyButton != null){
@@ -50,27 +60,27 @@ public class EditLaundryMachineFragment  extends Fragment implements View.OnClic
         if(v.getId() == R.id.applyMachineEditButton){
             Timber.tag(TAG).d("edit machine information");
             //update name in database
-
-            //change fragment
-            getActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.nav_host_fragment, new LaundryFragment())
-                    .addToBackStack(null)
-                    .commit();
-
-        } else if(v.getId() == R.id.deleteMachineButton){
-            Timber.tag(TAG).d("delete machine \""+"initial machine name"+"\"");
-            if (true){
-                //delete data from database if machine is not being used right now
-
+            if (machine.getUsedBy() == null) {
+                laundryViewModel.updateMachineName(machine.getName(), machineNameET.getText().toString());
 
                 //change fragment
-                getActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.nav_host_fragment, new LaundryFragment())
-                        .addToBackStack(null)
-                        .commit();
+                getActivity().getSupportFragmentManager().popBackStack();
+            } else {
+                LaundryMachineEditErrorDialogFragment dialog = new LaundryMachineEditErrorDialogFragment(1);
+                dialog.show(getActivity().getSupportFragmentManager(), "Laundry Function Error");
+            }
+
+        } else if(v.getId() == R.id.deleteMachineButton){
+            Timber.tag(TAG).d("delete machine: %s", machine.getName());
+            if (machine.getUsedBy() == null){
+                //delete data from database if machine is not being used right now
+                laundryViewModel.deleteMachine(machine.getName());
+
+                //change fragment
+                getActivity().getSupportFragmentManager().popBackStack();
             } else {
                 //else show an error dialog
-                LaundryMachineDeleteErrorDialogFragment dialog = new LaundryMachineDeleteErrorDialogFragment(0);
+                LaundryMachineEditErrorDialogFragment dialog = new LaundryMachineEditErrorDialogFragment(0);
                 dialog.show(getActivity().getSupportFragmentManager(), "Laundry Function Error");
             }
 
@@ -79,10 +89,7 @@ public class EditLaundryMachineFragment  extends Fragment implements View.OnClic
             Timber.tag(TAG).d("cancel machine information edit");
 
             //change fragment
-            getActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.nav_host_fragment, new LaundryFragment())
-                    .addToBackStack(null)
-                    .commit();
+            getActivity().getSupportFragmentManager().popBackStack();
 
         }
     }

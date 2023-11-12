@@ -87,7 +87,7 @@ public class Household {
                     // Create GroupChat, GroceryList, LaundryManager, Calendar
                     GroupChat.createGroupChat(householdId);
                     GroceryList.createGroceryList(householdId);
-                    LaundryManager.createLaundryManager(householdId);
+                    LaundryList.createLaundryList(householdId);
                     Calendar.createCalendar(householdId);
 
                 })
