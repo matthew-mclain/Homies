@@ -87,7 +87,6 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
         householdViewModel.getSelectedHousehold(requireContext()).observe(getViewLifecycleOwner(), household -> {
             if (household != null) {
                 Timber.tag(TAG).d("Selected household observed: %s", household.getHouseholdId());
-                // Fetch messages for the selected household's group chat
                 groceryListViewModel.getItemsFromGroceryList(household.getHouseholdId());
             } else {
                 Timber.tag(TAG).d("No household selected.");
