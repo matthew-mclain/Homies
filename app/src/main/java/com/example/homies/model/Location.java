@@ -25,4 +25,15 @@ public class Location {
 
     public String getUserId() {return userId; }
 
+//    public void setLongitude(String longitude) {
+//        this.longitude = longitude;
+//    }
+//
+//    public void setLatitude(String latitude) {
+//        this.latitude = latitude;
+//    }
+//
+//    public void setUserId(String userId) {
+//        this.userId = userId;
+//    }
 }
