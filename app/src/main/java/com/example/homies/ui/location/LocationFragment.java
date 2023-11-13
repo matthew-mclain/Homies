@@ -25,14 +25,22 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.android.gestures.MoveGestureDetector;
+import com.mapbox.geojson.Geometry;
 import com.mapbox.geojson.Point;
 import com.mapbox.maps.CameraOptions;
 import com.mapbox.maps.MapView;
 import com.mapbox.maps.MapboxMap;
 import com.mapbox.maps.Style;
+import com.mapbox.maps.ViewAnnotationOptions;
 import com.mapbox.maps.extension.observable.eventdata.StyleDataLoadedEventData;
 import com.mapbox.maps.plugin.LocationPuck2D;
 import com.mapbox.maps.plugin.Plugin;
+import com.mapbox.maps.plugin.annotation.AnnotationConfig;
+import com.mapbox.maps.plugin.annotation.AnnotationPlugin;
+import com.mapbox.maps.plugin.annotation.AnnotationPluginImplKt;
+import com.mapbox.maps.plugin.annotation.generated.CircleAnnotationManager;
+import com.mapbox.maps.plugin.annotation.generated.CircleAnnotationManagerKt;
+import com.mapbox.maps.plugin.annotation.generated.CircleAnnotationOptions;
 import com.mapbox.maps.plugin.delegates.listeners.OnStyleDataLoadedListener;
 import com.mapbox.maps.plugin.gestures.GesturesPlugin;
 import com.mapbox.maps.plugin.gestures.OnMoveListener;
@@ -40,6 +48,7 @@ import com.mapbox.maps.plugin.locationcomponent.LocationComponentPlugin;
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorBearingChangedListener;
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener;
 import com.mapbox.maps.plugin.locationcomponent.generated.LocationComponentSettings;
+import com.mapbox.maps.viewannotation.ViewAnnotationManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,7 +121,7 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
                 selectedHouseholdId = household.getHouseholdId();
                 Timber.tag(TAG).d("Selected household observed: %s", selectedHouseholdId);
 
-                // Fetch locations from the selected household's location manager
+                // Fetch locations for the selected household's location manager
                 locationViewModel.getLocationsFromLocationManager(household.getHouseholdId());
             } else {
                 Timber.tag(TAG).d("No household selected.");
@@ -125,6 +134,8 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
                 Timber.tag(TAG).d("Locations: %s", locations.size());
                 locationsArrayList.clear();
                 locationsArrayList.addAll(locations);
+                Timber.tag(TAG).d("LocationArrayList: %s", locationsArrayList.get(0).getUserId());
+                addLocationMarkers();
             } else {
                 Timber.tag(TAG).d("No locations");
             }
@@ -197,6 +208,7 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
     }
 
     private void setupMap(MapboxMap map) {
+        Timber.tag(TAG).d("setupMap");
         CameraOptions cameraOptions = new CameraOptions.Builder()
                 .zoom(14.0)
                 .build();
@@ -207,6 +219,7 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
 
 
     private void initLocation() {
+        Timber.tag(TAG).d("initLocation");
         final Activity activity = requireActivity();
         if (mLocationPuck == null) {
             mLocationPuck = new LocationPuck2D();
@@ -286,7 +299,6 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
     }
 
     private void startLocationUpdates() {
-        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleAtFixedRate(() -> {
             String userId = FirebaseAuth.getInstance().getUid();
             if (userId != null) {
@@ -295,5 +307,39 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
                 Timber.tag(TAG).d("User ID is null. Unable to save location.");
             }
         }, 0, UPDATE_INTERVAL, TimeUnit.MINUTES);
+    }
+
+    private void addLocationMarkers() {
+        Timber.tag(TAG).d("addLocationMarkers");
+        Timber.tag(TAG).d("LocationArrayList!: %s", locationsArrayList.get(0).getUserId().toString());
+
+        AnnotationPlugin annotationApi = AnnotationPluginImplKt.getAnnotations(mMapView);
+        ViewAnnotationManager viewAnnotationManager = mMapView.getViewAnnotationManager();
+        CircleAnnotationManager circleAnnotationManager = CircleAnnotationManagerKt.createCircleAnnotationManager(annotationApi, new AnnotationConfig());
+
+        for (Location location: locationsArrayList) {
+            Timber.tag(TAG).d("got %s's location", location.getUserId());
+
+            //View Annotation (not sure how to change the text)
+            Geometry g = Point.fromLngLat(Double.parseDouble(location.getLongitude()), Double.parseDouble(location.getLatitude()));
+            ViewAnnotationOptions viewAnnotationOptions = new ViewAnnotationOptions.Builder()
+                    .geometry(g)
+                            .build();
+
+            viewAnnotationManager.addViewAnnotation(R.layout.location_annotation, viewAnnotationOptions);
+
+
+            //Circle Annotation
+            Point p = Point.fromLngLat(Double.parseDouble(location.getLongitude()), Double.parseDouble(location.getLatitude()));
+            CircleAnnotationOptions circleAnnotationOptions = new CircleAnnotationOptions()
+                    .withPoint(p)
+                    .withCircleRadius(10.0)
+                    .withCircleColor("#ee4e8b")
+                    .withCircleBlur(0.5)
+                    .withCircleStrokeWidth(2.0)
+                    .withCircleStrokeColor("#ffffff");
+
+            circleAnnotationManager.create(circleAnnotationOptions);
+        }
     }
 }
