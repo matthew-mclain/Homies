@@ -33,7 +33,7 @@ public class LaundryViewModel extends ViewModel {
 
     public void getLaundryMachines(String householdId){
         db = MyApplication.getDbInstance();
-        db.collection("laundry_list")
+        db.collection("laundry_managers")
                 .whereEqualTo("householdId", householdId)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -59,7 +59,7 @@ public class LaundryViewModel extends ViewModel {
     }
 
     private void fetchLaundryItems(String laundryListId){
-        db.collection("laundry_list")
+        db.collection("laundry_managers")
                 .document(laundryListId)
                 .collection("laundry_machines")
                 .get()

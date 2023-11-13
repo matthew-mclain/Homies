@@ -28,7 +28,7 @@ public class LaundryList {
         LaundryList laundryList = new LaundryList(householdID);
 
         db = MyApplication.getDbInstance();
-        db.collection("laundry_list")
+        db.collection("laundry_managers")
                 .add(laundryList)
                 .addOnSuccessListener(documentReference -> {
                     Timber.tag(TAG).d("Laundry List Created Successfully: %s", documentReference.getId());
@@ -44,7 +44,7 @@ public class LaundryList {
             Machine machine = new Machine(machineName, null, null);
             Timber.tag(TAG).d("New Laundry Machine Adding in %s: ", householdId);
 
-            db.collection("laundry_list")
+            db.collection("laundry_managers")
                     .whereEqualTo("householdId", householdId)
                     .get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -52,7 +52,7 @@ public class LaundryList {
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
                             if (task.isSuccessful()){
                                 DocumentSnapshot doc = task.getResult().getDocuments().get(0);
-                                db.collection("laundry_list")
+                                db.collection("laundry_managers")
                                         .document(doc.getId())
                                         .collection("laundry_machines")
                                         .add(machine);
@@ -68,14 +68,14 @@ public class LaundryList {
         if (householdId != null) {
             // TO DO: check if dryer is being used
             db = MyApplication.getDbInstance();
-            db.collection("laundry_list")
+            db.collection("laundry_managers")
                     .whereEqualTo("householdId", householdId)
                     .get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
                             DocumentSnapshot doc = task.getResult().getDocuments().get(0);
-                            db.collection("laundry_list")
+                            db.collection("laundry_managers")
                                     .document(doc.getId())
                                     .collection("laundry_machines")
                                     .whereEqualTo("name", machineName)
@@ -84,7 +84,7 @@ public class LaundryList {
                                         @Override
                                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                             DocumentSnapshot machine = task.getResult().getDocuments().get(0);
-                                            db.collection("laundry_list")
+                                            db.collection("laundry_managers")
                                                     .document(doc.getId())
                                                     .collection("laundry_machines")
                                                     .document(machine.getId())
@@ -102,14 +102,14 @@ public class LaundryList {
         if (householdId != null)
             // TO DO: check if dryer is being used
             db = MyApplication.getDbInstance();
-        db.collection("laundry_list")
+        db.collection("laundry_managers")
                 .whereEqualTo("householdId", householdId)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         DocumentSnapshot doc = task.getResult().getDocuments().get(0);
-                        db.collection("laundry_list")
+                        db.collection("laundry_managers")
                                 .document(doc.getId())
                                 .collection("laundry_machines")
                                 .whereEqualTo("name", originalName)
@@ -118,7 +118,7 @@ public class LaundryList {
                                     @Override
                                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                         DocumentSnapshot machine = task.getResult().getDocuments().get(0);
-                                        db.collection("laundry_list")
+                                        db.collection("laundry_managers")
                                                 .document(doc.getId())
                                                 .collection("laundry_machines")
                                                 .document(machine.getId())
@@ -146,14 +146,14 @@ public class LaundryList {
         if (householdId != null && endTime != null){
             // TO DO: check if dryer is being used
             db = MyApplication.getDbInstance();
-            db.collection("laundry_list")
+            db.collection("laundry_managers")
                     .whereEqualTo("householdId", householdId)
                     .get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
                             DocumentSnapshot doc = task.getResult().getDocuments().get(0);
-                            db.collection("laundry_list")
+                            db.collection("laundry_managers")
                                     .document(doc.getId())
                                     .collection("laundry_machines")
                                     .whereEqualTo("name", machineName)
@@ -162,7 +162,7 @@ public class LaundryList {
                                         @Override
                                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                             DocumentSnapshot machine = task.getResult().getDocuments().get(0);
-                                            db.collection("laundry_list")
+                                            db.collection("laundry_managers")
                                                     .document(doc.getId())
                                                     .collection("laundry_machines")
                                                     .document(machine.getId())
@@ -175,14 +175,14 @@ public class LaundryList {
                     });
         } else if (householdId != null && endTime == null){
             db = MyApplication.getDbInstance();
-            db.collection("laundry_list")
+            db.collection("laundry_managers")
                     .whereEqualTo("householdId", householdId)
                     .get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
                             DocumentSnapshot doc = task.getResult().getDocuments().get(0);
-                            db.collection("laundry_list")
+                            db.collection("laundry_managers")
                                     .document(doc.getId())
                                     .collection("laundry_machines")
                                     .whereEqualTo("name", machineName)
@@ -191,7 +191,7 @@ public class LaundryList {
                                         @Override
                                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                             DocumentSnapshot machine = task.getResult().getDocuments().get(0);
-                                            db.collection("laundry_list")
+                                            db.collection("laundry_managers")
                                                     .document(doc.getId())
                                                     .collection("laundry_machines")
                                                     .document(machine.getId())

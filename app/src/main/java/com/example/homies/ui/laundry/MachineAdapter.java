@@ -31,6 +31,7 @@ public class MachineAdapter extends RecyclerView.Adapter<MachineAdapter.ViewHold
     LaundryViewModel laundryViewModel;
     private ArrayList<ViewHolder> viewHolderList;
 
+
     private final String TAG = getClass().getSimpleName();
 
     public MachineAdapter(ArrayList<Machine> machineList, FragmentManager fragmentManager, LaundryViewModel laundryViewModel){

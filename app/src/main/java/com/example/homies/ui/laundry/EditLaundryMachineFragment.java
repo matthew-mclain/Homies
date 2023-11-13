@@ -62,7 +62,6 @@ public class EditLaundryMachineFragment  extends Fragment implements View.OnClic
             //update name in database
             if (machine.getUsedBy() == null) {
                 laundryViewModel.updateMachineName(machine.getName(), machineNameET.getText().toString());
-
                 //change fragment
                 getActivity().getSupportFragmentManager().popBackStack();
             } else {
@@ -75,7 +74,6 @@ public class EditLaundryMachineFragment  extends Fragment implements View.OnClic
             if (machine.getUsedBy() == null){
                 //delete data from database if machine is not being used right now
                 laundryViewModel.deleteMachine(machine.getName());
-
                 //change fragment
                 getActivity().getSupportFragmentManager().popBackStack();
             } else {

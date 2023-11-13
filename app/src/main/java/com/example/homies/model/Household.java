@@ -84,7 +84,7 @@ public class Household {
                     household.addUser(userId);
                     household.updateHouseholdInFirestore();
 
-                    // Create GroupChat, GroceryList, LaundryManager, Calendar
+                    // Create GroupChat, GroceryList, LaundryList, Calendar
                     GroupChat.createGroupChat(householdId);
                     GroceryList.createGroceryList(householdId);
                     LaundryList.createLaundryList(householdId);
