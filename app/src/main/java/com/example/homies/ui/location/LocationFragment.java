@@ -3,6 +3,7 @@ package com.example.homies.ui.location;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -13,14 +14,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.homies.R;
-import com.example.homies.model.GroceryItem;
 import com.example.homies.model.Location;
-import com.example.homies.model.viewmodel.GroceryListViewModel;
 import com.example.homies.model.viewmodel.HouseholdViewModel;
 import com.example.homies.model.viewmodel.LocationViewModel;
 import com.google.firebase.auth.FirebaseAuth;
@@ -43,12 +41,8 @@ import com.mapbox.maps.plugin.locationcomponent.OnIndicatorBearingChangedListene
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener;
 import com.mapbox.maps.plugin.locationcomponent.generated.LocationComponentSettings;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -70,12 +64,13 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
     private GesturesPlugin mGesturesPlugin;
     private static final String TAG = LocationFragment.class.getSimpleName();
     ArrayList<Location> locationsArrayList = new ArrayList<>();
+    private String selectedHouseholdId;
     private HouseholdViewModel householdViewModel;
     private LocationViewModel locationViewModel;
     private String currentLatitude;
     private String currentLongitude;
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-    private static final long UPDATE_INTERVAL = 5; // 5 minutes
+    private static final long UPDATE_INTERVAL = 1; // 1 minute
 
 
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -85,19 +80,9 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
 
         View v = inflater.inflate(R.layout.fragment_location, container, false);
 
-        mMapView = (MapView) v.findViewById(R.id.mapView);
+        mMapView = v.findViewById(R.id.mapView);
         MapboxMap mMapboxMap = mMapView.getMapboxMap();
         setupMap(mMapboxMap);
-
-        // Request location permissions when the fragment is created
-        if (!PermissionsManager.areLocationPermissionsGranted(requireContext())) {
-            Timber.tag(TAG).d("Requesting permissions...");
-            mPermissionsManager.requestLocationPermissions(requireActivity());
-        } else {
-            // Permissions are already granted, start location updates
-            Timber.tag(TAG).d("Permissions already granted.");
-            startLocationUpdates();
-        }
 
         return v;
     }
@@ -111,11 +96,23 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         householdViewModel = new ViewModelProvider(requireActivity()).get(HouseholdViewModel.class);
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 
+        // Request location permissions when the fragment is created
+        if (!PermissionsManager.areLocationPermissionsGranted(requireContext())) {
+            Timber.tag(TAG).d("Requesting permissions...");
+            mPermissionsManager.requestLocationPermissions(requireActivity());
+        } else {
+            // Permissions are already granted, start location updates
+            Timber.tag(TAG).d("Permissions already granted.");
+            new Handler().postDelayed(this::startLocationUpdates, 1000); // 1000 milliseconds delay
+        }
+
         //Observe the selected household LiveData
         householdViewModel.getSelectedHousehold(requireContext()).observe(getViewLifecycleOwner(), household -> {
             if (household != null) {
-                Timber.tag(TAG).d("Selected household observed: %s", household.getHouseholdId());
-                // Fetch messages for the selected household's group chat
+                selectedHouseholdId = household.getHouseholdId();
+                Timber.tag(TAG).d("Selected household observed: %s", selectedHouseholdId);
+
+                // Fetch locations from the selected household's location manager
                 locationViewModel.getLocationsFromLocationManager(household.getHouseholdId());
             } else {
                 Timber.tag(TAG).d("No household selected.");
@@ -130,6 +127,17 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
                 locationsArrayList.addAll(locations);
             } else {
                 Timber.tag(TAG).d("No locations");
+            }
+        });
+
+        //Observe the location exists LiveData
+        locationViewModel.getLocationExists().observe(getViewLifecycleOwner(), locationExists -> {
+            if (locationExists) {
+                Timber.tag(TAG).d("Location already exists. Updating location...");
+                locationViewModel.updateLocation(currentLongitude, currentLatitude, FirebaseAuth.getInstance().getUid());
+            } else {
+                Timber.tag(TAG).d("Location doesn't exist. Adding new location...");
+                locationViewModel.addLocation(currentLongitude, currentLatitude, FirebaseAuth.getInstance().getUid());
             }
         });
     }
@@ -180,7 +188,7 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         if (granted) {
             Timber.tag(TAG).d("Location permission granted");
             Toast.makeText(requireContext(), "User granted location permission", Toast.LENGTH_SHORT).show();
-            startLocationUpdates();
+            new Handler().postDelayed(this::startLocationUpdates, 1000); // 1000 milliseconds delay
         } else {
             Timber.d(TAG, "User denied location permission");
             Toast.makeText(requireContext(), "User denied location permission", Toast.LENGTH_SHORT).show();
@@ -277,33 +285,15 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         }
     }
 
-    private void saveLocationToDatabase() {
-        Timber.tag(TAG).d("Saving location to database...");
-
-        String userId = FirebaseAuth.getInstance().getUid();
-        if (userId != null) {
-            String latitude = currentLatitude;
-            String longitude = currentLongitude;
-
-            // Check if the location exists in Firestore
-            locationViewModel.checkIfLocationExists(userId).observe(getViewLifecycleOwner(), locationExists -> {
-                if (locationExists) {
-                    Timber.tag(TAG).d("Location already exists. Updating location...");
-                    locationViewModel.updateLocation(longitude, latitude, userId);
-                } else {
-                    Timber.tag(TAG).d("Location doesn't exist. Adding new location...");
-                    locationViewModel.addLocation(longitude, latitude, userId);
-                }
-            });
-        } else {
-            Timber.tag(TAG).d("User ID is null. Unable to save location.");
-        }
-    }
-
     private void startLocationUpdates() {
-        if (executorService != null && !executorService.isShutdown()) {
-            executorService.scheduleAtFixedRate(this::saveLocationToDatabase, 0, UPDATE_INTERVAL, TimeUnit.MINUTES);
-            Timber.tag(TAG).d("Location updates started.");
-        }
+        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+        executorService.scheduleAtFixedRate(() -> {
+            String userId = FirebaseAuth.getInstance().getUid();
+            if (userId != null) {
+                locationViewModel.checkIfLocationExists(userId, selectedHouseholdId);
+            } else {
+                Timber.tag(TAG).d("User ID is null. Unable to save location.");
+            }
+        }, 0, UPDATE_INTERVAL, TimeUnit.MINUTES);
     }
 }

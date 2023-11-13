@@ -25,6 +25,7 @@ public class LocationViewModel extends ViewModel {
 
     private MutableLiveData<LocationManager> selectedLocationManager = new MutableLiveData<>();
     private MutableLiveData<List<Location>> selectedLocations = new MutableLiveData<>();
+    private MutableLiveData<Boolean> locationExistsLiveData = new MutableLiveData<>();
     private static FirebaseFirestore db;
     public boolean locationEnabled;
 
@@ -46,6 +47,14 @@ public class LocationViewModel extends ViewModel {
 
     public void setSelectedLocations(List<Location> locations) {
         selectedLocations.setValue(locations);
+    }
+
+    public LiveData<Boolean> getLocationExists() {
+        return locationExistsLiveData;
+    }
+
+    public void setLocationExists(boolean locationExists) {
+        locationExistsLiveData.setValue(locationExists);
     }
 
     public void getLocationsFromLocationManager(String householdId) {
@@ -72,6 +81,7 @@ public class LocationViewModel extends ViewModel {
     }
 
     private void fetchLocations(String locationManagerId) {
+        db = MyApplication.getDbInstance();
         db.collection("location_manager")
                 .document(locationManagerId)
                 .collection("locations")
@@ -102,6 +112,7 @@ public class LocationViewModel extends ViewModel {
     }
 
     public void addLocation(String longitude, String latitude, String userId) {
+        Timber.tag(TAG).d("Adding location...");
         LocationManager locationManager = selectedLocationManager.getValue();
         if (locationManager != null) {
             locationManager.addLocation(longitude, latitude, userId);
@@ -131,25 +142,36 @@ public class LocationViewModel extends ViewModel {
         }
     }
 
-    public LiveData<Boolean> checkIfLocationExists(String userId) {
-        Timber.tag(TAG).d("Checking if location exists...");
-
-        MutableLiveData<Boolean> locationExistsLiveData = new MutableLiveData<>();
-        db.collection("locations")
-                .whereEqualTo("userId", userId)
+    public void checkIfLocationExists(String userId, String householdId) {
+        db = MyApplication.getDbInstance();
+        db.collection("location_manager")
+                .whereEqualTo("householdId", householdId)
                 .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    // Check if the query result is not empty
-                    boolean locationExists = !queryDocumentSnapshots.isEmpty();
-                    locationExistsLiveData.setValue(locationExists);
-                })
-                .addOnFailureListener(e -> {
-                    // Handle errors
-                    Timber.e(e, "Failed to check if location exists.");
-                    locationExistsLiveData.setValue(false);
-                });
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && !task.getResult().isEmpty()) {
+                        DocumentSnapshot locationManagerDocument = task.getResult().getDocuments().get(0);
+                        locationManagerDocument.getReference()
+                                .collection("locations")
+                                .whereEqualTo("userId", userId)
+                                .get()
+                                .addOnCompleteListener(locationTask -> {
+                                    if (locationTask.isSuccessful()) {
+                                        // Check if the query result is not empty
+                                        boolean locationExists = !locationTask.getResult().isEmpty();
+                                        setLocationExists(locationExists);
+                                    } else {
+                                        // Handle errors in the second query
+                                        Timber.e(locationTask.getException(), "Failed to check if location exists in locations subcollection.");
+                                        setLocationExists(false);
+                                    }
+                                });
 
-        return locationExistsLiveData;
+                    } else {
+                        // Handle errors in the first query
+                        Timber.e(task.getException(), "Failed to check if location exists in location_manager collection.");
+                        setLocationExists(false);
+                    }
+                });
     }
 
 }
