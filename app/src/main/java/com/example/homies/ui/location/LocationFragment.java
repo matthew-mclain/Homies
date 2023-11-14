@@ -316,9 +316,8 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         Timber.tag(TAG).d("addLocationMarkers");
         Timber.tag(TAG).d("LocationArrayList!: %s", locationsArrayList.get(0).getUserId().toString());
 
-        AnnotationPlugin annotationApi = AnnotationPluginImplKt.getAnnotations(mMapView);
+//        AnnotationPlugin annotationApi = AnnotationPluginImplKt.getAnnotations(mMapView);
         ViewAnnotationManager viewAnnotationManager = mMapView.getViewAnnotationManager();
-        CircleAnnotationManager circleAnnotationManager = CircleAnnotationManagerKt.createCircleAnnotationManager(annotationApi, new AnnotationConfig());
 
         // Remove all existing annotations
         viewAnnotationManager.removeAllViewAnnotations();
@@ -357,22 +356,6 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
                     Timber.tag(TAG).d("Display Name is null for %s", location.getUserId());
                 }
             });
-
-            // Circle Annotation
-            Point p = Point.fromLngLat(
-                    Double.parseDouble(location.getLongitude()),
-                    Double.parseDouble(location.getLatitude())
-            );
-
-            CircleAnnotationOptions circleAnnotationOptions = new CircleAnnotationOptions()
-                    .withPoint(p)
-                    .withCircleRadius(10.0)
-                    .withCircleColor("#ee4e8b")
-                    .withCircleBlur(0.5)
-                    .withCircleStrokeWidth(2.0)
-                    .withCircleStrokeColor("#ffffff");
-
-            circleAnnotationManager.create(circleAnnotationOptions);
         }
     }
 }
