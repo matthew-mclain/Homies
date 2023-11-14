@@ -11,23 +11,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.example.homies.MyApplication;
 import com.example.homies.R;
 import com.example.homies.model.User;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import timber.log.Timber;
 
@@ -40,7 +29,6 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
     View view;
     FirebaseAuth mAuth;
     private final String TAG = getClass().getSimpleName();
-    private FirebaseFirestore db;
 
 
     public SignUpFragment(LoginActivity loginActivity) {
@@ -55,7 +43,6 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
 
 
         mAuth = FirebaseAuth.getInstance();
-        db = MyApplication.getDbInstance();
 
         emailET = view.findViewById((R.id.editTextSignInEmail));
         passwordET = view.findViewById(R.id.editTextSignInPassword);
@@ -70,7 +57,6 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
         if (backButton != null){
             backButton.setOnClickListener(this);
         }
-
 
         return view;
     }
@@ -94,40 +80,34 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
             }
 
             mAuth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()) {
-                                //Create User
-                                String userId = mAuth.getCurrentUser().getUid();
-                                String email = mAuth.getCurrentUser().getEmail();
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            //Create User
+                            String userId = mAuth.getCurrentUser().getUid();
+                            String email1 = mAuth.getCurrentUser().getEmail();
 
-                                User.createUser(userId, email);
+                            User.createUser(userId, email1);
 
-                                // Sign in success, update UI with the signed-in user's information
-                                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int button) {
-                                        if (button == DialogInterface.BUTTON_POSITIVE) {
-                                            // Handle positive button click (YES)
-                                            loginActivity.showSignInFragment();
-                                        } else if (button == DialogInterface.BUTTON_NEGATIVE) {
-                                            // Handle negative button click (NO)
-                                            loginActivity.showButtons(view);
-                                        }
-                                    }
-                                };
-                                new AlertDialog.Builder(requireActivity())
-                                        .setTitle("Congratulations!")
-                                        .setMessage("Successfully signed up for Homies!\nMove to Sign In page?")
-                                        .setNegativeButton("NO", dialogClickListener)
-                                        .setPositiveButton("YES", dialogClickListener)
-                                        .create().show();
-                            } else {
-                                // If sign in fails, display a message to the user.
-                                SignUpErrorDialogFragment dialog = new SignUpErrorDialogFragment(1);
-                                dialog.show(manager, "SignInError");
-                            }
+                            // Sign in success, update UI with the signed-in user's information
+                            DialogInterface.OnClickListener dialogClickListener = (dialog, button) -> {
+                                if (button == DialogInterface.BUTTON_POSITIVE) {
+                                    // Handle positive button click (YES)
+                                    loginActivity.showSignInFragment();
+                                } else if (button == DialogInterface.BUTTON_NEGATIVE) {
+                                    // Handle negative button click (NO)
+                                    loginActivity.showButtons(view);
+                                }
+                            };
+                            new AlertDialog.Builder(requireActivity())
+                                    .setTitle("Congratulations!")
+                                    .setMessage("Successfully signed up for Homies!\nMove to Sign In page?")
+                                    .setNegativeButton("NO", dialogClickListener)
+                                    .setPositiveButton("YES", dialogClickListener)
+                                    .create().show();
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            SignUpErrorDialogFragment dialog = new SignUpErrorDialogFragment(1);
+                            dialog.show(manager, "SignInError");
                         }
                     });
 

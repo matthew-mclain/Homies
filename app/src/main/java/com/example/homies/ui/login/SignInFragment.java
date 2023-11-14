@@ -82,37 +82,34 @@ public class SignInFragment extends Fragment implements View.OnClickListener{
             }
 
             mAuth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()) {
-                                // User signed in successfully, check if they are in a household
-                                String userId = mAuth.getCurrentUser().getUid();
-                                db = MyApplication.getDbInstance();
-                                db.collection("households")
-                                        .whereArrayContains("householdUsers", userId)
-                                        .get()
-                                        .addOnSuccessListener(querySnapshot -> {
-                                            if (!querySnapshot.isEmpty()) {
-                                                // User is in a household, launch MainActivity
-                                                Intent intent = new Intent(getActivity(), MainActivity.class);
-                                                startActivity(intent);
-                                            } else {
-                                                // User is not in any household, launch HouseholdActivity
-                                                Intent intent = new Intent(getActivity(), HouseholdActivity.class);
-                                                startActivity(intent);
-                                            }
-                                        })
-                                        .addOnFailureListener(e -> {
-                                            // Handle errors
-                                            SignInErrorDialogFragment dialog = new SignInErrorDialogFragment(1);
-                                            dialog.show(manager, "SignInError");
-                                        });
-                            } else {
-                                // If sign in fails, display a message to the user.
-                                SignInErrorDialogFragment dialog = new SignInErrorDialogFragment(1);
-                                dialog.show(manager, "SignInError");
-                            }
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            // User signed in successfully, check if they are in a household
+                            String userId = mAuth.getCurrentUser().getUid();
+                            db = MyApplication.getDbInstance();
+                            db.collection("households")
+                                    .whereArrayContains("householdUsers", userId)
+                                    .get()
+                                    .addOnSuccessListener(querySnapshot -> {
+                                        if (!querySnapshot.isEmpty()) {
+                                            // User is in a household, launch MainActivity
+                                            Intent intent = new Intent(getActivity(), MainActivity.class);
+                                            startActivity(intent);
+                                        } else {
+                                            // User is not in any household, launch HouseholdActivity
+                                            Intent intent = new Intent(getActivity(), HouseholdActivity.class);
+                                            startActivity(intent);
+                                        }
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        // Handle errors
+                                        SignInErrorDialogFragment dialog = new SignInErrorDialogFragment(1);
+                                        dialog.show(manager, "SignInError");
+                                    });
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            SignInErrorDialogFragment dialog = new SignInErrorDialogFragment(1);
+                            dialog.show(manager, "SignInError");
                         }
                     });
 

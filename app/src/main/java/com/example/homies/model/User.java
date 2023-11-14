@@ -104,21 +104,25 @@ public class User {
     }
 
     public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+        if (userId != null) {
+            this.displayName = displayName;
 
-        //Update the displayName in Firestore
-        db = MyApplication.getDbInstance();
-        db.collection("users")
-                .document(userId)
-                .update("displayName", displayName)
-                .addOnSuccessListener(aVoid -> {
-                    // Display name updated successfully
-                    Timber.tag(TAG).d("Display name updated to: %s", displayName);
-                })
-                .addOnFailureListener(e -> {
-                    // Handle errors
-                    Timber.tag(TAG).e(e, "Error updating display name for user ID: %s", userId);
-                });
+            //Update the displayName in Firestore
+            db = MyApplication.getDbInstance();
+            db.collection("users")
+                    .document(userId)
+                    .update("displayName", displayName)
+                    .addOnSuccessListener(aVoid -> {
+                        // Display name updated successfully
+                        Timber.tag(TAG).d("Display name updated to: %s", displayName);
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle errors
+                        Timber.tag(TAG).e(e, "Error updating display name for user ID: %s", userId);
+                    });
+        } else {
+            Timber.tag(TAG).e("User ID is null. Cannot update display name.");
+        }
     }
 
     public static void createUser (String userId, String email) {
