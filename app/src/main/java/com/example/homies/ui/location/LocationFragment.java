@@ -10,6 +10,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -31,6 +33,7 @@ import com.mapbox.maps.CameraOptions;
 import com.mapbox.maps.MapView;
 import com.mapbox.maps.MapboxMap;
 import com.mapbox.maps.Style;
+import com.mapbox.maps.ViewAnnotationAnchor;
 import com.mapbox.maps.ViewAnnotationOptions;
 import com.mapbox.maps.extension.observable.eventdata.StyleDataLoadedEventData;
 import com.mapbox.maps.plugin.LocationPuck2D;
@@ -317,20 +320,50 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         ViewAnnotationManager viewAnnotationManager = mMapView.getViewAnnotationManager();
         CircleAnnotationManager circleAnnotationManager = CircleAnnotationManagerKt.createCircleAnnotationManager(annotationApi, new AnnotationConfig());
 
+        // Remove all existing annotations
+        viewAnnotationManager.removeAllViewAnnotations();
+
         for (Location location: locationsArrayList) {
             Timber.tag(TAG).d("got %s's location", location.getUserId());
 
-            //View Annotation (not sure how to change the text)
-            Geometry g = Point.fromLngLat(Double.parseDouble(location.getLongitude()), Double.parseDouble(location.getLatitude()));
-            ViewAnnotationOptions viewAnnotationOptions = new ViewAnnotationOptions.Builder()
-                    .geometry(g)
+            // Create a point geometry from the location coordinates
+            Geometry g = Point.fromLngLat(
+                    Double.parseDouble(location.getLongitude()),
+                    Double.parseDouble(location.getLatitude())
+            );
+
+            // Fetch the display name asynchronously
+            location.getDisplayName(displayName -> {
+                if (displayName != null) {
+                    // Create a ViewAnnotationOptions
+                    ViewAnnotationOptions viewAnnotationOptions = new ViewAnnotationOptions.Builder()
+                            .geometry(g)
+                            .width(200)
+                            .height(75)
+                            .visible(true)
+                            .anchor(ViewAnnotationAnchor.CENTER)
+                            .selected(false)
                             .build();
 
-            viewAnnotationManager.addViewAnnotation(R.layout.location_annotation, viewAnnotationOptions);
+                    // Inflate the layout to access its views
+                    View annotationView = LayoutInflater.from(getContext()).inflate(R.layout.location_annotation, mMapView, false);
+                    TextView displayNameTextView = annotationView.findViewById(R.id.annotation);
 
+                    // Set the text to the fetched display name
+                    displayNameTextView.setText(displayName);
 
-            //Circle Annotation
-            Point p = Point.fromLngLat(Double.parseDouble(location.getLongitude()), Double.parseDouble(location.getLatitude()));
+                    viewAnnotationManager.addViewAnnotation(annotationView, viewAnnotationOptions);
+                } else {
+                    Timber.tag(TAG).d("Display Name is null for %s", location.getUserId());
+                }
+            });
+
+            // Circle Annotation
+            Point p = Point.fromLngLat(
+                    Double.parseDouble(location.getLongitude()),
+                    Double.parseDouble(location.getLatitude())
+            );
+
             CircleAnnotationOptions circleAnnotationOptions = new CircleAnnotationOptions()
                     .withPoint(p)
                     .withCircleRadius(10.0)
