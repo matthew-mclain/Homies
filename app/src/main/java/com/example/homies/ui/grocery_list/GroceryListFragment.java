@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.homies.MyApplication;
 import com.example.homies.R;
 import com.example.homies.model.GroceryItem;
 import com.example.homies.model.viewmodel.HouseholdViewModel;
@@ -83,42 +85,50 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
         householdViewModel = new ViewModelProvider(requireActivity()).get(HouseholdViewModel.class);
         groceryListViewModel = new ViewModelProvider(this).get(GroceryListViewModel.class);
 
-        //Observe the selected household LiveData
-        householdViewModel.getSelectedHousehold(requireContext()).observe(getViewLifecycleOwner(), household -> {
-            if (household != null) {
-                Timber.tag(TAG).d("Selected household observed: %s", household.getHouseholdId());
-                groceryListViewModel.getItemsFromGroceryList(household.getHouseholdId());
-            } else {
-                Timber.tag(TAG).d("No household selected.");
-            }
-        });
-
-
-        //Observe the grocery items LiveData
-        groceryListViewModel.getSelectedItems().observe(getViewLifecycleOwner(), items -> {
-            if (items != null && !items.isEmpty()) {
-                Timber.tag(TAG).d("Grocery items: " + items.size());
-                groceryItemsArrayList.clear();
-                for (GroceryItem item: items) {
-                    groceryItemsArrayList.add(item.getItemName());
+        // Check if network connection exists
+        if (MyApplication.hasNetworkConnection(requireContext())) {
+            //Observe the selected household LiveData
+            householdViewModel.getSelectedHousehold(requireContext()).observe(getViewLifecycleOwner(), household -> {
+                if (household != null) {
+                    Timber.tag(TAG).d("Selected household observed: %s", household.getHouseholdId());
+                    groceryListViewModel.getItemsFromGroceryList(household.getHouseholdId());
+                } else {
+                    Timber.tag(TAG).d("No household selected.");
                 }
-                adapter.notifyDataSetChanged();
-            } else {
-                Timber.tag(TAG).d("No grocery items");
-            }
-        });
+            });
+
+
+            //Observe the grocery items LiveData
+            groceryListViewModel.getSelectedItems().observe(getViewLifecycleOwner(), items -> {
+                if (items != null && !items.isEmpty()) {
+                    Timber.tag(TAG).d("Grocery items: " + items.size());
+                    groceryItemsArrayList.clear();
+                    for (GroceryItem item : items) {
+                        groceryItemsArrayList.add(item.getItemName());
+                    }
+                    adapter.notifyDataSetChanged();
+                } else {
+                    Timber.tag(TAG).d("No grocery items");
+                }
+            });
+        } else {
+            Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void onClick(View view) {
         Timber.tag(TAG).d("onClick()");
-
-        if (view.getId() == R.id.addButton) {
-            Timber.tag(TAG).d("add");
-            String itemName = String.valueOf(itemET.getText());
-            groceryListViewModel.addGroceryItem(itemName);
-            groceryItemsArrayList.add(itemName);
-            adapter.notifyDataSetChanged();
-            itemET.getText().clear();
+        if (MyApplication.hasNetworkConnection(requireContext())) {
+            if (view.getId() == R.id.addButton) {
+                Timber.tag(TAG).d("add");
+                String itemName = String.valueOf(itemET.getText());
+                groceryListViewModel.addGroceryItem(itemName);
+                groceryItemsArrayList.add(itemName);
+                adapter.notifyDataSetChanged();
+                itemET.getText().clear();
+            }
+        } else {
+            Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
         }
 //        if (view.getId() == R.id.deleteButton) {
 //            Timber.tag(TAG).d("delete");
@@ -186,15 +196,19 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
                 itemCheckBox.setChecked(false);
                 itemCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
                     if (isChecked) {
-                        String itemName = groceryItemsArrayList.get(getAdapterPosition());
-                        groceryListViewModel.deleteGroceryItem(itemName);
-                        groceryItemsArrayList.remove(getAdapterPosition());
-                        recyclerViewGrocery.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                adapter.notifyDataSetChanged();
-                            }
-                        });
+                        if (MyApplication.hasNetworkConnection(requireContext())) {
+                            String itemName = groceryItemsArrayList.get(getAdapterPosition());
+                            groceryListViewModel.deleteGroceryItem(itemName);
+                            groceryItemsArrayList.remove(getAdapterPosition());
+                            recyclerViewGrocery.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    adapter.notifyDataSetChanged();
+                                }
+                            });
+                        } else {
+                            Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
             }

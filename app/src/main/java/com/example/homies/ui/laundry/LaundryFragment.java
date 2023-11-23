@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -13,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.homies.MyApplication;
 import com.example.homies.R;
 import com.example.homies.model.Machine;
 import com.example.homies.model.viewmodel.HouseholdViewModel;
@@ -63,30 +65,35 @@ public class LaundryFragment extends Fragment implements View.OnClickListener {
         householdViewModel = new ViewModelProvider(requireActivity()).get(HouseholdViewModel.class);
         laundryViewModel = new ViewModelProvider(requireActivity()).get(LaundryViewModel.class);
 
-        //Observe household livedata
-        householdViewModel.getSelectedHousehold(requireContext())
-                .observe(getViewLifecycleOwner(), household -> {
-                    if (household != null){
-                        Timber.tag(TAG).d("Selected Household Observed: %s", household.getHouseholdId());
-                        laundryViewModel.getLaundryMachines(household.getHouseholdId());
-                    } else{
-                        Timber.tag(TAG).d("No Household Selected.");
-                    }
-                });
+        // Check if network connection exists
+        if (MyApplication.hasNetworkConnection(requireContext())) {
+            //Observe household livedata
+            householdViewModel.getSelectedHousehold(requireContext())
+                    .observe(getViewLifecycleOwner(), household -> {
+                        if (household != null) {
+                            Timber.tag(TAG).d("Selected Household Observed: %s", household.getHouseholdId());
+                            laundryViewModel.getLaundryMachines(household.getHouseholdId());
+                        } else {
+                            Timber.tag(TAG).d("No Household Selected.");
+                        }
+                    });
 
-        //Observe laundry machines livedata
-        laundryViewModel.getLaundryMachines().observe(getViewLifecycleOwner(), machines -> {
-            if (machines != null && !machines.isEmpty()){
-                Timber.tag(TAG).d("Laundry Machines: %s", machines.size());
-                listOfMachines.clear();
-                for (Machine machine : machines){
-                    listOfMachines.add(machine);
+            //Observe laundry machines livedata
+            laundryViewModel.getLaundryMachines().observe(getViewLifecycleOwner(), machines -> {
+                if (machines != null && !machines.isEmpty()) {
+                    Timber.tag(TAG).d("Laundry Machines: %s", machines.size());
+                    listOfMachines.clear();
+                    for (Machine machine : machines) {
+                        listOfMachines.add(machine);
+                    }
+                    adapter.notifyDataSetChanged();
+                } else {
+                    Timber.tag(TAG).d("No Laundry Machines");
                 }
-                adapter.notifyDataSetChanged();
-            } else{
-                Timber.tag(TAG).d("No Laundry Machines");
-            }
-        });
+            });
+        } else {
+            Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
+        }
 
         //fill in the list
         listOfMachines = new ArrayList<>();

@@ -2,6 +2,7 @@ package com.example.homies;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -34,26 +35,30 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void checkUserHouseholdStatus(String userId) {
-        db = MyApplication.getDbInstance();
+        if (MyApplication.hasNetworkConnection(this)) {
+            db = MyApplication.getDbInstance();
 
-        db.collection("households")
-                .whereArrayContains("householdUsers", userId)
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    if (!querySnapshot.isEmpty()) {
-                        // User is in a household, launch MainActivity
-                        startActivity(new Intent(SplashActivity.this, MainActivity.class));
-                    } else {
-                        // User is not in any household, launch HouseholdActivity
-                        startActivity(new Intent(SplashActivity.this, HouseholdActivity.class));
-                    }
-                    finish();
-                })
-                .addOnFailureListener(e -> {
-                    // Handle errors
-                    Timber.tag(TAG).e(e, "Error checking user household status");
-                    startActivity(new Intent(SplashActivity.this, LoginActivity.class));
-                    finish();
-                });
+            db.collection("households")
+                    .whereArrayContains("householdUsers", userId)
+                    .get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        if (!querySnapshot.isEmpty()) {
+                            // User is in a household, launch MainActivity
+                            startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                        } else {
+                            // User is not in any household, launch HouseholdActivity
+                            startActivity(new Intent(SplashActivity.this, HouseholdActivity.class));
+                        }
+                        finish();
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle errors
+                        Timber.tag(TAG).e(e, "Error checking user household status");
+                        startActivity(new Intent(SplashActivity.this, LoginActivity.class));
+                        finish();
+                    });
+        } else {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 }

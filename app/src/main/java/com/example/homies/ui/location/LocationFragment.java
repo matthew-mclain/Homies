@@ -19,6 +19,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.homies.MyApplication;
 import com.example.homies.R;
 import com.example.homies.model.Location;
 import com.example.homies.model.viewmodel.HouseholdViewModel;
@@ -104,56 +105,62 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         super.onViewCreated(view, savedInstanceState);
         Timber.tag(TAG).d("onViewCreated()");
 
-        //Initialize ViewModel instances
-        householdViewModel = new ViewModelProvider(requireActivity()).get(HouseholdViewModel.class);
-        locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+        // Check if network connection exists
+        if (MyApplication.hasNetworkConnection(requireContext())) {
 
-        // Request location permissions when the fragment is created
-        if (!PermissionsManager.areLocationPermissionsGranted(requireContext())) {
-            Timber.tag(TAG).d("Requesting permissions...");
-            mPermissionsManager.requestLocationPermissions(requireActivity());
+            //Initialize ViewModel instances
+            householdViewModel = new ViewModelProvider(requireActivity()).get(HouseholdViewModel.class);
+            locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+
+            // Request location permissions when the fragment is created
+            if (!PermissionsManager.areLocationPermissionsGranted(requireContext())) {
+                Timber.tag(TAG).d("Requesting permissions...");
+                mPermissionsManager.requestLocationPermissions(requireActivity());
+            } else {
+                // Permissions are already granted, start location updates
+                Timber.tag(TAG).d("Permissions already granted.");
+                new Handler().postDelayed(this::startLocationUpdates, 1000); // 1000 milliseconds delay
+            }
+
+            //Observe the selected household LiveData
+            householdViewModel.getSelectedHousehold(requireContext()).observe(getViewLifecycleOwner(), household -> {
+                if (household != null) {
+                    selectedHouseholdId = household.getHouseholdId();
+                    Timber.tag(TAG).d("Selected household observed: %s", selectedHouseholdId);
+
+                    // Fetch locations for the selected household's location manager
+                    locationViewModel.getLocationsFromLocationManager(household.getHouseholdId());
+                } else {
+                    Timber.tag(TAG).d("No household selected.");
+                }
+            });
+
+            //Observe the locations LiveData
+            locationViewModel.getSelectedLocations().observe(getViewLifecycleOwner(), locations -> {
+                if (locations != null && !locations.isEmpty()) {
+                    Timber.tag(TAG).d("Locations: %s", locations.size());
+                    locationsArrayList.clear();
+                    locationsArrayList.addAll(locations);
+                    Timber.tag(TAG).d("LocationArrayList: %s", locationsArrayList.get(0).getUserId());
+                    addLocationMarkers();
+                } else {
+                    Timber.tag(TAG).d("No locations");
+                }
+            });
+
+            //Observe the location exists LiveData
+            locationViewModel.getLocationExists().observe(getViewLifecycleOwner(), locationExists -> {
+                if (locationExists) {
+                    Timber.tag(TAG).d("Location already exists. Updating location...");
+                    locationViewModel.updateLocation(currentLongitude, currentLatitude, FirebaseAuth.getInstance().getUid());
+                } else {
+                    Timber.tag(TAG).d("Location doesn't exist. Adding new location...");
+                    locationViewModel.addLocation(currentLongitude, currentLatitude, FirebaseAuth.getInstance().getUid());
+                }
+            });
         } else {
-            // Permissions are already granted, start location updates
-            Timber.tag(TAG).d("Permissions already granted.");
-            new Handler().postDelayed(this::startLocationUpdates, 1000); // 1000 milliseconds delay
+            Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
         }
-
-        //Observe the selected household LiveData
-        householdViewModel.getSelectedHousehold(requireContext()).observe(getViewLifecycleOwner(), household -> {
-            if (household != null) {
-                selectedHouseholdId = household.getHouseholdId();
-                Timber.tag(TAG).d("Selected household observed: %s", selectedHouseholdId);
-
-                // Fetch locations for the selected household's location manager
-                locationViewModel.getLocationsFromLocationManager(household.getHouseholdId());
-            } else {
-                Timber.tag(TAG).d("No household selected.");
-            }
-        });
-
-        //Observe the locations LiveData
-        locationViewModel.getSelectedLocations().observe(getViewLifecycleOwner(), locations -> {
-            if (locations != null && !locations.isEmpty()) {
-                Timber.tag(TAG).d("Locations: %s", locations.size());
-                locationsArrayList.clear();
-                locationsArrayList.addAll(locations);
-                Timber.tag(TAG).d("LocationArrayList: %s", locationsArrayList.get(0).getUserId());
-                addLocationMarkers();
-            } else {
-                Timber.tag(TAG).d("No locations");
-            }
-        });
-
-        //Observe the location exists LiveData
-        locationViewModel.getLocationExists().observe(getViewLifecycleOwner(), locationExists -> {
-            if (locationExists) {
-                Timber.tag(TAG).d("Location already exists. Updating location...");
-                locationViewModel.updateLocation(currentLongitude, currentLatitude, FirebaseAuth.getInstance().getUid());
-            } else {
-                Timber.tag(TAG).d("Location doesn't exist. Adding new location...");
-                locationViewModel.addLocation(currentLongitude, currentLatitude, FirebaseAuth.getInstance().getUid());
-            }
-        });
     }
 
     @Override
@@ -180,15 +187,19 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mGesturesPlugin.removeOnMoveListener(this);
-        mGesturesPlugin = null;
-        mLocationPlugin.removeOnIndicatorBearingChangedListener(this);
-        mLocationPlugin.removeOnIndicatorPositionChangedListener(this);
-        mLocationPlugin = null;
-        MapboxMap map = mMapView.getMapboxMap();
-        map.removeOnStyleDataLoadedListener(this);
-        mMapView = null;
-        executorService.shutdown();
+        if (MyApplication.hasNetworkConnection(requireContext())) {
+            mGesturesPlugin.removeOnMoveListener(this);
+            mGesturesPlugin = null;
+            mLocationPlugin.removeOnIndicatorBearingChangedListener(this);
+            mLocationPlugin.removeOnIndicatorPositionChangedListener(this);
+            mLocationPlugin = null;
+            MapboxMap map = mMapView.getMapboxMap();
+            map.removeOnStyleDataLoadedListener(this);
+            mMapView = null;
+            executorService.shutdown();
+        } else {
+            Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -211,13 +222,17 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
     }
 
     private void setupMap(MapboxMap map) {
-        Timber.tag(TAG).d("setupMap");
-        CameraOptions cameraOptions = new CameraOptions.Builder()
-                .zoom(14.0)
-                .build();
-        map.setCamera(cameraOptions);
-        map.loadStyleUri(Style.MAPBOX_STREETS);
-        map.addOnStyleDataLoadedListener(this);
+        if (MyApplication.hasNetworkConnection(requireContext())) {
+            Timber.tag(TAG).d("setupMap");
+            CameraOptions cameraOptions = new CameraOptions.Builder()
+                    .zoom(14.0)
+                    .build();
+            map.setCamera(cameraOptions);
+            map.loadStyleUri(Style.MAPBOX_STREETS);
+            map.addOnStyleDataLoadedListener(this);
+        } else {
+            Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 
 
@@ -303,11 +318,15 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
 
     private void startLocationUpdates() {
         executorService.scheduleAtFixedRate(() -> {
-            String userId = FirebaseAuth.getInstance().getUid();
-            if (userId != null) {
-                locationViewModel.checkIfLocationExists(userId, selectedHouseholdId);
+            if (MyApplication.hasNetworkConnection(requireContext())) {
+                String userId = FirebaseAuth.getInstance().getUid();
+                if (userId != null) {
+                    locationViewModel.checkIfLocationExists(userId, selectedHouseholdId);
+                } else {
+                    Timber.tag(TAG).d("User ID is null. Unable to save location.");
+                }
             } else {
-                Timber.tag(TAG).d("User ID is null. Unable to save location.");
+                Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
             }
         }, 0, UPDATE_INTERVAL, TimeUnit.MINUTES);
     }
@@ -316,46 +335,50 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         Timber.tag(TAG).d("addLocationMarkers");
         Timber.tag(TAG).d("LocationArrayList!: %s", locationsArrayList.get(0).getUserId().toString());
 
-//        AnnotationPlugin annotationApi = AnnotationPluginImplKt.getAnnotations(mMapView);
+        // AnnotationPlugin annotationApi = AnnotationPluginImplKt.getAnnotations(mMapView);
         ViewAnnotationManager viewAnnotationManager = mMapView.getViewAnnotationManager();
 
         // Remove all existing annotations
         viewAnnotationManager.removeAllViewAnnotations();
 
-        for (Location location: locationsArrayList) {
-            Timber.tag(TAG).d("got %s's location", location.getUserId());
+        if (MyApplication.hasNetworkConnection(requireContext())) {
+            for (Location location : locationsArrayList) {
+                Timber.tag(TAG).d("got %s's location", location.getUserId());
 
-            // Create a point geometry from the location coordinates
-            Geometry g = Point.fromLngLat(
-                    Double.parseDouble(location.getLongitude()),
-                    Double.parseDouble(location.getLatitude())
-            );
+                // Create a point geometry from the location coordinates
+                Geometry g = Point.fromLngLat(
+                        Double.parseDouble(location.getLongitude()),
+                        Double.parseDouble(location.getLatitude())
+                );
 
-            // Fetch the display name asynchronously
-            location.getDisplayName(displayName -> {
-                if (displayName != null) {
-                    // Create a ViewAnnotationOptions
-                    ViewAnnotationOptions viewAnnotationOptions = new ViewAnnotationOptions.Builder()
-                            .geometry(g)
-                            .width(200)
-                            .height(75)
-                            .visible(true)
-                            .anchor(ViewAnnotationAnchor.CENTER)
-                            .selected(false)
-                            .build();
+                // Fetch the display name asynchronously
+                location.getDisplayName(displayName -> {
+                    if (displayName != null) {
+                        // Create a ViewAnnotationOptions
+                        ViewAnnotationOptions viewAnnotationOptions = new ViewAnnotationOptions.Builder()
+                                .geometry(g)
+                                .width(200)
+                                .height(75)
+                                .visible(true)
+                                .anchor(ViewAnnotationAnchor.CENTER)
+                                .selected(false)
+                                .build();
 
-                    // Inflate the layout to access its views
-                    View annotationView = LayoutInflater.from(getContext()).inflate(R.layout.location_annotation, mMapView, false);
-                    TextView displayNameTextView = annotationView.findViewById(R.id.annotation);
+                        // Inflate the layout to access its views
+                        View annotationView = LayoutInflater.from(getContext()).inflate(R.layout.location_annotation, mMapView, false);
+                        TextView displayNameTextView = annotationView.findViewById(R.id.annotation);
 
-                    // Set the text to the fetched display name
-                    displayNameTextView.setText(displayName);
+                        // Set the text to the fetched display name
+                        displayNameTextView.setText(displayName);
 
-                    viewAnnotationManager.addViewAnnotation(annotationView, viewAnnotationOptions);
-                } else {
-                    Timber.tag(TAG).d("Display Name is null for %s", location.getUserId());
-                }
-            });
+                        viewAnnotationManager.addViewAnnotation(annotationView, viewAnnotationOptions);
+                    } else {
+                        Timber.tag(TAG).d("Display Name is null for %s", location.getUserId());
+                    }
+                });
+            }
+        } else {
+            Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
         }
     }
 }

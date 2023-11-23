@@ -6,9 +6,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import com.example.homies.MyApplication;
 import com.example.homies.R;
 import com.example.homies.model.LaundryList;
 import com.example.homies.model.viewmodel.HouseholdViewModel;
@@ -51,17 +53,21 @@ public class AddLaundryMachineFragment extends Fragment implements View.OnClickL
     public void onClick(View v) {
         Timber.tag(TAG).d("onClick()");
 
-        if(v.getId() == R.id.addMachineButton){
-            Timber.tag(TAG).d("add machine");
-            String machineName = machineNameET.getText().toString();
-            laundryViewModel.addLaundryMachine(machineName);
+        if (MyApplication.hasNetworkConnection(requireContext())) {
+            if(v.getId() == R.id.addMachineButton){
+                Timber.tag(TAG).d("add machine");
+                String machineName = machineNameET.getText().toString();
+                laundryViewModel.addLaundryMachine(machineName);
 
-            //change fragment
-            getActivity().getSupportFragmentManager().popBackStack();
+                //change fragment
+                getActivity().getSupportFragmentManager().popBackStack();
 
-        } else if (v.getId() == R.id.cancelAddMachineButton){
-            //change fragment
-            getActivity().getSupportFragmentManager().popBackStack();
+            } else if (v.getId() == R.id.cancelAddMachineButton) {
+                //change fragment
+                getActivity().getSupportFragmentManager().popBackStack();
+            }
+        } else {
+            Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
         }
     }
 }

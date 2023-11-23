@@ -258,31 +258,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateDisplayName(String newDisplayName) {
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser != null) {
-            // Update FirebaseUser's displayName
-            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                    .setDisplayName(newDisplayName)
-                    .build();
+        if (MyApplication.hasNetworkConnection(this)) {
+            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (currentUser != null) {
+                // Update FirebaseUser's displayName
+                UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                        .setDisplayName(newDisplayName)
+                        .build();
 
-            currentUser.updateProfile(profileUpdates)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            getCurrentUserObject(currentUser.getUid(), user -> {
-                                if (user != null) {
-                                    user.setDisplayName(newDisplayName);
-                                    updateNavDrawerHeader();
-                                } else {
-                                    // Handle null user object
-                                    Timber.tag(TAG).e("User object is null");
-                                }
-                            });
+                currentUser.updateProfile(profileUpdates)
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                getCurrentUserObject(currentUser.getUid(), user -> {
+                                    if (user != null) {
+                                        user.setDisplayName(newDisplayName);
+                                        updateNavDrawerHeader();
+                                    } else {
+                                        // Handle null user object
+                                        Timber.tag(TAG).e("User object is null");
+                                    }
+                                });
 
-                        } else {
-                            // Handle update failure
-                            Timber.tag(TAG).e(task.getException(), "Error updating FirebaseUser's display name");
-                        }
-                    });
+                            } else {
+                                // Handle update failure
+                                Timber.tag(TAG).e(task.getException(), "Error updating FirebaseUser's display name");
+                            }
+                        });
+            } else {
+                Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -291,23 +295,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getCurrentUserObject(String userId, UserCallback callback) {
-        db = MyApplication.getDbInstance();
-        db.collection("users").document(userId)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        User user = documentSnapshot.toObject(User.class);
-                        callback.onCallback(user);
-                    } else {
-                        // Document does not exist
-                        Timber.tag(TAG).e("User document not found for user ID: %s", userId);
+        if (MyApplication.hasNetworkConnection(this)) {
+            db = MyApplication.getDbInstance();
+            db.collection("users").document(userId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            User user = documentSnapshot.toObject(User.class);
+                            callback.onCallback(user);
+                        } else {
+                            // Document does not exist
+                            Timber.tag(TAG).e("User document not found for user ID: %s", userId);
+                            callback.onCallback(null);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle Firestore query failure
+                        Timber.tag(TAG).e(e, "Error fetching user document for user ID: %s", userId);
                         callback.onCallback(null);
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    // Handle Firestore query failure
-                    Timber.tag(TAG).e(e, "Error fetching user document for user ID: %s", userId);
-                    callback.onCallback(null);
-                });
+                    });
+        } else {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 }

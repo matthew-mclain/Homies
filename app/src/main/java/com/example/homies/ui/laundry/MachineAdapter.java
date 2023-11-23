@@ -9,11 +9,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.homies.MyApplication;
 import com.example.homies.R;
 import com.example.homies.model.Machine;
 import com.example.homies.model.User;
@@ -48,7 +50,7 @@ public class MachineAdapter extends RecyclerView.Adapter<MachineAdapter.ViewHold
         LayoutInflater inflater = LayoutInflater.from(context);
 
         View view = inflater.inflate(R.layout.adapter_laundry_machine, parent, false);
-        ViewHolder viewHolder = new ViewHolder(view);
+        ViewHolder viewHolder = new ViewHolder(view, context);
         viewHolderList.add(viewHolder);
         return viewHolder;
     }
@@ -79,10 +81,12 @@ public class MachineAdapter extends RecyclerView.Adapter<MachineAdapter.ViewHold
         public Button stopMachineButton, editMachineButton;
         private Machine machine;
         private User user;
+        private Context context;
 
-
-        public ViewHolder(View itemView) {
+        public ViewHolder(View itemView, Context context) {
             super(itemView);
+            this.context = context;
+
             machineNameTV = itemView.findViewById(R.id.textViewMachineNameInList);
             machineDetailTV = itemView.findViewById(R.id.textViewMachineDetailInList);
             stopMachineButton = itemView.findViewById(R.id.laundryStopButton);
@@ -94,17 +98,21 @@ public class MachineAdapter extends RecyclerView.Adapter<MachineAdapter.ViewHold
 
         @Override
         public void onClick(View v) {
-            if (v.getId() == R.id.laundryStopButton){
-                laundryViewModel.updateMachineStatus(machine.getName(), -1);
-                fragmentManager.beginTransaction()
-                        .replace(R.id.fragment_container, new LaundryFragment())
-                        .commit();
-            } else if (v.getId() == R.id.machineEditButton){
-                //link to machine edit page
-                fragmentManager.beginTransaction()
-                        .replace(R.id.fragment_container, new EditLaundryMachineFragment(laundryViewModel, machine))
-                        .addToBackStack(null)
-                        .commit();
+            if (MyApplication.hasNetworkConnection(context)) {
+                if (v.getId() == R.id.laundryStopButton) {
+                    laundryViewModel.updateMachineStatus(machine.getName(), -1);
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.fragment_container, new LaundryFragment())
+                            .commit();
+                } else if (v.getId() == R.id.machineEditButton) {
+                    //link to machine edit page
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.fragment_container, new EditLaundryMachineFragment(laundryViewModel, machine))
+                            .addToBackStack(null)
+                            .commit();
+                }
+            } else {
+                Toast.makeText(context, "No internet connection", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -118,9 +126,13 @@ public class MachineAdapter extends RecyclerView.Adapter<MachineAdapter.ViewHold
         public void setMachine(Machine machine) {
             this.machine = machine;
             UserViewModel userViewModel = new UserViewModel();
-            if (machine.getUsedBy() != null){
-                userViewModel.getUserInformation(machine.getUsedBy());
-                user = userViewModel.getUser();
+            if (MyApplication.hasNetworkConnection(context)) {
+                if (machine.getUsedBy() != null) {
+                    userViewModel.getUserInformation(machine.getUsedBy());
+                    user = userViewModel.getUser();
+                }
+            } else {
+                Toast.makeText(context, "No internet connection", Toast.LENGTH_SHORT).show();
             }
         }
 

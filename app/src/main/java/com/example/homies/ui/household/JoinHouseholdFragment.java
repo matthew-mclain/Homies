@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 
 import com.example.homies.MainActivity;
+import com.example.homies.MyApplication;
 import com.example.homies.R;
 import com.example.homies.model.Household;
 import com.google.firebase.auth.FirebaseAuth;
@@ -53,22 +54,24 @@ public class JoinHouseholdFragment extends Fragment implements View.OnClickListe
     @Override
     public void onClick(View view) {
         Timber.tag(TAG).d("onClick()");
+        if (MyApplication.hasNetworkConnection(requireContext())) {
+            if (view.getId() == R.id.buttonJoin) {
+                String householdName = String.valueOf(editTextHouseholdName.getText());
 
-        if (view.getId() == R.id.buttonJoin) {
-            String householdName = String.valueOf(editTextHouseholdName.getText());
+                if (!TextUtils.isEmpty(householdName)) {
+                    String userId = currentUser.getUid();
+                    Household.joinHousehold(householdName, userId);
 
-            if (!TextUtils.isEmpty(householdName)) {
-                String userId = currentUser.getUid();
-                Household.joinHousehold(householdName, userId);
-
-                Intent intent = new Intent(getActivity(), MainActivity.class);
-                startActivity(intent);
-            } else {
-                Toast.makeText(getActivity(), "Error: Household name is empty.", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(getActivity(), "Error: Household name is empty.", Toast.LENGTH_SHORT).show();
+                }
+            } else if (view.getId() == R.id.buttonBack) {
+                householdActivity.showButtons(this.view);
             }
-        }
-        else if (view.getId() == R.id.buttonBack) {
-            householdActivity.showButtons(this.view);
+        } else {
+            Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
         }
     }
 }

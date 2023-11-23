@@ -1,6 +1,10 @@
 package com.example.homies;
 
 import android.app.Application;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -21,5 +25,21 @@ public class MyApplication extends Application {
 
     public static FirebaseFirestore getDbInstance() {
         return db;
+    }
+
+    public static boolean hasNetworkConnection(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if (connectivityManager != null) {
+            Network network = connectivityManager.getActiveNetwork();
+
+            if (network != null) {
+                NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
+                return capabilities != null && (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+                        || capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI));
+            }
+        }
+
+        return false;
     }
 }

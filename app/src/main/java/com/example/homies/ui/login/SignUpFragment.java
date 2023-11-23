@@ -11,9 +11,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
+
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.example.homies.MyApplication;
 import com.example.homies.R;
 import com.example.homies.model.User;
 import com.google.firebase.auth.FirebaseAuth;
@@ -79,37 +82,41 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
                 return;
             }
 
-            mAuth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            //Create User
-                            String userId = mAuth.getCurrentUser().getUid();
-                            String email1 = mAuth.getCurrentUser().getEmail();
+            if (MyApplication.hasNetworkConnection(requireContext())) {
+                mAuth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                //Create User
+                                String userId = mAuth.getCurrentUser().getUid();
+                                String email1 = mAuth.getCurrentUser().getEmail();
 
-                            User.createUser(userId, email1);
+                                User.createUser(userId, email1);
 
-                            // Sign in success, update UI with the signed-in user's information
-                            DialogInterface.OnClickListener dialogClickListener = (dialog, button) -> {
-                                if (button == DialogInterface.BUTTON_POSITIVE) {
-                                    // Handle positive button click (YES)
-                                    loginActivity.showSignInFragment();
-                                } else if (button == DialogInterface.BUTTON_NEGATIVE) {
-                                    // Handle negative button click (NO)
-                                    loginActivity.showButtons(view);
-                                }
-                            };
-                            new AlertDialog.Builder(requireActivity())
-                                    .setTitle("Congratulations!")
-                                    .setMessage("Successfully signed up for Homies!\nMove to Sign In page?")
-                                    .setNegativeButton("NO", dialogClickListener)
-                                    .setPositiveButton("YES", dialogClickListener)
-                                    .create().show();
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            SignUpErrorDialogFragment dialog = new SignUpErrorDialogFragment(1);
-                            dialog.show(manager, "SignInError");
-                        }
-                    });
+                                // Sign in success, update UI with the signed-in user's information
+                                DialogInterface.OnClickListener dialogClickListener = (dialog, button) -> {
+                                    if (button == DialogInterface.BUTTON_POSITIVE) {
+                                        // Handle positive button click (YES)
+                                        loginActivity.showSignInFragment();
+                                    } else if (button == DialogInterface.BUTTON_NEGATIVE) {
+                                        // Handle negative button click (NO)
+                                        loginActivity.showButtons(view);
+                                    }
+                                };
+                                new AlertDialog.Builder(requireActivity())
+                                        .setTitle("Congratulations!")
+                                        .setMessage("Successfully signed up for Homies!\nMove to Sign In page?")
+                                        .setNegativeButton("NO", dialogClickListener)
+                                        .setPositiveButton("YES", dialogClickListener)
+                                        .create().show();
+                            } else {
+                                // If sign in fails, display a message to the user.
+                                SignUpErrorDialogFragment dialog = new SignUpErrorDialogFragment(1);
+                                dialog.show(manager, "SignInError");
+                            }
+                        });
+            } else {
+                Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
+            }
 
         } else if (view.getId() == R.id.buttonBack){
             loginActivity.showButtons(this.view);

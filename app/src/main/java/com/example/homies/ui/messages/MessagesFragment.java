@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.homies.MyApplication;
 import com.example.homies.R;
 import com.example.homies.model.GroceryItem;
 import com.example.homies.model.GroupChat;
@@ -80,50 +81,59 @@ public class MessagesFragment extends Fragment implements View.OnClickListener {
         householdViewModel = new ViewModelProvider(requireActivity()).get(HouseholdViewModel.class);
         groupChatViewModel = new ViewModelProvider(this).get(GroupChatViewModel.class);
 
-        // Observe the selected household LiveData
-        householdViewModel.getSelectedHousehold(requireContext()).observe(getViewLifecycleOwner(), household -> {
-            if (household != null) {
-                Timber.tag(TAG).d("Selected household observed: %s", household.getHouseholdId());
-                // Fetch messages for the selected household's group chat
-                groupChatViewModel.getMessagesForGroupChat(household.getHouseholdId());
-            } else {
-                Timber.tag(TAG).d("No household selected.");
-            }
-        });
+        // Check if network connection exists
+        if (MyApplication.hasNetworkConnection(requireContext())) {
+            // Observe the selected household LiveData
+            householdViewModel.getSelectedHousehold(requireContext()).observe(getViewLifecycleOwner(), household -> {
+                if (household != null) {
+                    Timber.tag(TAG).d("Selected household observed: %s", household.getHouseholdId());
+                    // Fetch messages for the selected household's group chat
+                    groupChatViewModel.getMessagesForGroupChat(household.getHouseholdId());
+                } else {
+                    Timber.tag(TAG).d("No household selected.");
+                }
+            });
 
-        // Observe the messages LiveData from GroupChatViewModel
-        groupChatViewModel.getSelectedMessages().observe(getViewLifecycleOwner(), messages -> {
-            if (messages != null && !messages.isEmpty()) {
-                Timber.tag(TAG).d("Received messages: %s", messages.size());
-                // Clear existing messages and add the new messages to the adapter
-                messagesList.clear();
-                messagesList.addAll(messages);
-                adapter.notifyDataSetChanged();
+            // Observe the messages LiveData from GroupChatViewModel
+            groupChatViewModel.getSelectedMessages().observe(getViewLifecycleOwner(), messages -> {
+                if (messages != null && !messages.isEmpty()) {
+                    Timber.tag(TAG).d("Received messages: %s", messages.size());
+                    // Clear existing messages and add the new messages to the adapter
+                    messagesList.clear();
+                    messagesList.addAll(messages);
+                    adapter.notifyDataSetChanged();
 
-                // Scroll RecyclerView to the last position after updating the adapter
-                recyclerViewChat.scrollToPosition(adapter.getItemCount() - 1);
-            } else {
-                // Handle the case where no messages are available
-                Timber.tag(TAG).d("No messages available.");
-            }
-        });
+                    // Scroll RecyclerView to the last position after updating the adapter
+                    recyclerViewChat.scrollToPosition(adapter.getItemCount() - 1);
+                } else {
+                    // Handle the case where no messages are available
+                    Timber.tag(TAG).d("No messages available.");
+                }
+            });
+        } else {
+            Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.buttonSendMessage) {
-            String senderUserId = FirebaseAuth.getInstance().getUid();
-            String messageContent = messageEditText.getText().toString();
-            long timestamp = System.currentTimeMillis();
+            if (MyApplication.hasNetworkConnection(requireContext())) {
+                String senderUserId = FirebaseAuth.getInstance().getUid();
+                String messageContent = messageEditText.getText().toString();
+                long timestamp = System.currentTimeMillis();
 
-            if (!messageContent.trim().isEmpty()) {
-                groupChatViewModel.addMessage(senderUserId, messageContent, timestamp);
+                if (!messageContent.trim().isEmpty()) {
+                    groupChatViewModel.addMessage(senderUserId, messageContent, timestamp);
 
-                // Clear the messageEditText after sending the message
-                messageEditText.getText().clear();
+                    // Clear the messageEditText after sending the message
+                    messageEditText.getText().clear();
+                } else {
+                    // Handle the case where the message content is empty
+                    Toast.makeText(requireContext(), "Message cannot be empty", Toast.LENGTH_SHORT).show();
+                }
             } else {
-                // Handle the case where the message content is empty
-                Toast.makeText(requireContext(), "Message cannot be empty", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
             }
         }
     }
