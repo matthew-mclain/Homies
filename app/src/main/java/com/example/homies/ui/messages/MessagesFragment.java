@@ -138,7 +138,11 @@ public class MessagesFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-    private static class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    public ChatAdapter getAdapter() {
+        return adapter;
+    }
+
+    public static class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private List<Message> messages;
         private String currentUserId;
         private static final int VIEW_TYPE_SENT = 1;
