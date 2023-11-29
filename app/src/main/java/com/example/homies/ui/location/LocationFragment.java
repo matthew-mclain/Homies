@@ -79,7 +79,8 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
     private LocationViewModel locationViewModel;
     private String currentLatitude;
     private String currentLongitude;
-    LocationManager locationManager;
+    private LocationManager locationManager;
+    private boolean locationEnabled;
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private static final long UPDATE_INTERVAL = 1; // 1 minute
 
@@ -109,10 +110,7 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
 
         // Check if device location is enabled
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-//        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-//            Timber.tag(TAG).d("GPS not enabled.");
-//            showGPSDisabledAlertToUser();
-//        }
+        locationEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
         // Request location permissions when the fragment is created
         if (!PermissionsManager.areLocationPermissionsGranted(requireContext())) {
@@ -121,7 +119,9 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         } else {
             // Permissions are already granted, start location updates
             Timber.tag(TAG).d("Permissions already granted.");
-            new Handler().postDelayed(this::startLocationUpdates, 1000); // 1000 milliseconds delay
+            if (locationEnabled) {
+                new Handler().postDelayed(this::startLocationUpdates, 1000); // 1000 milliseconds delay
+            }
         }
 
         //Observe the selected household LiveData
