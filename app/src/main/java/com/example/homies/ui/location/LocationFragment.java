@@ -2,8 +2,12 @@ package com.example.homies.ui.location;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -24,6 +28,7 @@ import com.example.homies.R;
 import com.example.homies.model.Location;
 import com.example.homies.model.viewmodel.HouseholdViewModel;
 import com.example.homies.model.viewmodel.LocationViewModel;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
@@ -39,12 +44,6 @@ import com.mapbox.maps.ViewAnnotationOptions;
 import com.mapbox.maps.extension.observable.eventdata.StyleDataLoadedEventData;
 import com.mapbox.maps.plugin.LocationPuck2D;
 import com.mapbox.maps.plugin.Plugin;
-import com.mapbox.maps.plugin.annotation.AnnotationConfig;
-import com.mapbox.maps.plugin.annotation.AnnotationPlugin;
-import com.mapbox.maps.plugin.annotation.AnnotationPluginImplKt;
-import com.mapbox.maps.plugin.annotation.generated.CircleAnnotationManager;
-import com.mapbox.maps.plugin.annotation.generated.CircleAnnotationManagerKt;
-import com.mapbox.maps.plugin.annotation.generated.CircleAnnotationOptions;
 import com.mapbox.maps.plugin.delegates.listeners.OnStyleDataLoadedListener;
 import com.mapbox.maps.plugin.gestures.GesturesPlugin;
 import com.mapbox.maps.plugin.gestures.OnMoveListener;
@@ -82,6 +81,8 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
     private LocationViewModel locationViewModel;
     private String currentLatitude;
     private String currentLongitude;
+    private LocationManager locationManager;
+    private boolean locationEnabled;
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private static final long UPDATE_INTERVAL = 1; // 1 minute
 
@@ -112,6 +113,10 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
             householdViewModel = new ViewModelProvider(requireActivity()).get(HouseholdViewModel.class);
             locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 
+            // Check if device location is enabled
+            locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+            locationEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    
             // Request location permissions when the fragment is created
             if (!PermissionsManager.areLocationPermissionsGranted(requireContext())) {
                 Timber.tag(TAG).d("Requesting permissions...");
@@ -119,7 +124,9 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
             } else {
                 // Permissions are already granted, start location updates
                 Timber.tag(TAG).d("Permissions already granted.");
-                new Handler().postDelayed(this::startLocationUpdates, 1000); // 1000 milliseconds delay
+                if (locationEnabled) {
+                    new Handler().postDelayed(this::startLocationUpdates, 1000); // 1000 milliseconds delay
+                }
             }
 
             //Observe the selected household LiveData
@@ -163,6 +170,22 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         }
     }
 
+    private void showGPSDisabledAlertToUser() {
+        Timber.tag(TAG).d("showGPSDisabledAlertToUser");
+        MaterialAlertDialogBuilder locationDialog = new MaterialAlertDialogBuilder(getContext());
+        locationDialog.setTitle("Attention");
+        locationDialog.setMessage("Location setting is not enabled.");
+        locationDialog.setCancelable(false);
+        locationDialog.setPositiveButton("Open settings", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(intent);
+            }
+        });
+        locationDialog.create().show();
+    }
+
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
@@ -176,6 +199,9 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         if (itemId == R.id.menu_showcurrentlocation) {
             if (!PermissionsManager.areLocationPermissionsGranted(requireContext())) {
                 mPermissionsManager.requestLocationPermissions(activity);
+            } else if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){   // Check if device location is enabled
+                Timber.tag(TAG).d("GPS not enabled.");
+                showGPSDisabledAlertToUser();
             } else {
                 MapboxMap map = mMapView.getMapboxMap();
                 setupMap(map);
@@ -241,8 +267,6 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         final Activity activity = requireActivity();
         if (mLocationPuck == null) {
             mLocationPuck = new LocationPuck2D();
-//            mLocationPuck.setBearingImage(AppCompatResources.getDrawable(activity, R.drawable.location_24));
-//            mLocationPuck.setShadowImage(AppCompatResources.getDrawable(activity, R.drawable.location_24));
         }
 
         mLocationPlugin = mMapView.getPlugin(Plugin.MAPBOX_LOCATION_COMPONENT_PLUGIN_ID);
@@ -251,7 +275,6 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
                 @Override
                 public Unit invoke(LocationComponentSettings locationComponentSettings) {
                     locationComponentSettings.setEnabled(true);
-//                    locationComponentSettings.setLocationPuck(mLocationPuck);
                     return null;
                 }
             });
@@ -306,7 +329,7 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
 
     private void onCameraTrackingDismissed() {
         Timber.tag(TAG).d("onCameraTrackingDismissed()");
-        Toast.makeText(requireActivity(), "onCameraTrackingDismissed", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(requireActivity(), "onCameraTrackingDismissed", Toast.LENGTH_SHORT).show();
         if (mLocationPlugin != null) {
             mLocationPlugin.removeOnIndicatorPositionChangedListener(this);
             mLocationPlugin.removeOnIndicatorBearingChangedListener(this);
@@ -335,7 +358,6 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         Timber.tag(TAG).d("addLocationMarkers");
         Timber.tag(TAG).d("LocationArrayList!: %s", locationsArrayList.get(0).getUserId().toString());
 
-        // AnnotationPlugin annotationApi = AnnotationPluginImplKt.getAnnotations(mMapView);
         ViewAnnotationManager viewAnnotationManager = mMapView.getViewAnnotationManager();
 
         // Remove all existing annotations
@@ -343,6 +365,10 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
 
         if (MyApplication.hasNetworkConnection(requireContext())) {
             for (Location location : locationsArrayList) {
+                // If user's location is not enabled, their location in db will be null
+                if (location.getLatitude() == null || location.getLongitude() == null) {
+                    continue;
+                }
                 Timber.tag(TAG).d("got %s's location", location.getUserId());
 
                 // Create a point geometry from the location coordinates
