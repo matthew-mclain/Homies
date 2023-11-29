@@ -37,6 +37,7 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
     public SignUpFragment(LoginActivity loginActivity) {
         this.loginActivity = loginActivity;
     }
+    public SignUpFragment(){};
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

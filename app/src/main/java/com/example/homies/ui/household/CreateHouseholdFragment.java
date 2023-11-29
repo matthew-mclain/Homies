@@ -38,6 +38,8 @@ public class CreateHouseholdFragment extends Fragment implements View.OnClickLis
         this.householdActivity = householdActivity;
     }
 
+    public CreateHouseholdFragment(){};
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {

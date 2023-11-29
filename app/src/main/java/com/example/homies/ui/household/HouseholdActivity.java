@@ -19,9 +19,13 @@ import timber.log.Timber;
 public class HouseholdActivity extends AppCompatActivity implements View.OnClickListener {
     FirebaseAuth mAuth;
     private final String TAG = getClass().getSimpleName();
+    private int state = 0;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null){
+            state = savedInstanceState.getInt("HouseholdState", 0);
+        }
         Timber.tag(TAG).d("onCreate()");
         setContentView(R.layout.activity_household);
         mAuth = FirebaseAuth.getInstance();
@@ -37,6 +41,12 @@ public class HouseholdActivity extends AppCompatActivity implements View.OnClick
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true); // Enable back arrow
+        }
+
+        if (state == 1){
+            showCreateHouseholdFragment();
+        } if (state == 2){
+            showJoinHouseholdFragment();
         }
     }
 
@@ -55,8 +65,15 @@ public class HouseholdActivity extends AppCompatActivity implements View.OnClick
         }
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
+        outState.putInt("HouseholdState", state);
+    }
+
     // Method to switch to CreateHouseholdFragment
     public void showCreateHouseholdFragment() {
+        state = 1;
         hideButtons();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, new CreateHouseholdFragment(this))
@@ -66,6 +83,7 @@ public class HouseholdActivity extends AppCompatActivity implements View.OnClick
 
     // Method to switch to JoinHouseholdFragment
     public void showJoinHouseholdFragment() {
+        state = 2;
         hideButtons();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, new JoinHouseholdFragment(this))

@@ -8,15 +8,15 @@
     <EditText
         android:id="@+id/editTextSignInEmail"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
+        android:autofillHints="emailAddress"
         android:hint="@string/email"
-        android:inputType="textEmailAddress"
-        android:autofillHints="emailAddress" />
+        android:inputType="textEmailAddress" />
 
     <EditText
         android:id="@+id/editTextSignInPassword"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:autofillHints=""
         android:hint="@string/password"
         android:inputType="textPassword" />
@@ -24,7 +24,7 @@
     <EditText
         android:id="@+id/editTextSignInConfirmPassword"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:autofillHints=""
         android:hint="@string/confirm_password"
         android:inputType="textPassword" />

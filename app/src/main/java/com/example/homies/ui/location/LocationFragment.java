@@ -216,15 +216,19 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
     public void onDestroyView() {
         super.onDestroyView();
         if (MyApplication.hasNetworkConnection(requireContext())) {
-            mGesturesPlugin.removeOnMoveListener(this);
-            mGesturesPlugin = null;
-            mLocationPlugin.removeOnIndicatorBearingChangedListener(this);
-            mLocationPlugin.removeOnIndicatorPositionChangedListener(this);
-            mLocationPlugin = null;
+            if (mGesturesPlugin != null){
+                mGesturesPlugin.removeOnMoveListener(this);
+                mGesturesPlugin = null;
+            }
+            if (mLocationPlugin != null){
+                mLocationPlugin.removeOnIndicatorBearingChangedListener(this);
+                mLocationPlugin.removeOnIndicatorPositionChangedListener(this);
+                mLocationPlugin = null;
+            }
             MapboxMap map = mMapView.getMapboxMap();
             map.removeOnStyleDataLoadedListener(this);
             mMapView = null;
-            executorService.shutdown();
+            //executorService.shutdown();
         } else {
             Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
         }

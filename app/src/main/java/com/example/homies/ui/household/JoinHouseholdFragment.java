@@ -31,6 +31,7 @@ public class JoinHouseholdFragment extends Fragment implements View.OnClickListe
     public JoinHouseholdFragment(HouseholdActivity householdActivity) {
         this.householdActivity = householdActivity;
     }
+    public JoinHouseholdFragment(){};
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

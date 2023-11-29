@@ -41,6 +41,7 @@ public class SignInFragment extends Fragment implements View.OnClickListener{
     public SignInFragment(LoginActivity loginActivity) {
         this.loginActivity = loginActivity;
     }
+    public SignInFragment() {};
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

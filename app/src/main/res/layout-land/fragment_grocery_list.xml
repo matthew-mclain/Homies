@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewGrocery"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/layoutMessageInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/recyclerViewGrocery"
+        app:layout_constraintVertical_bias="0.0"
+        tools:layout_editor_absoluteX="16dp">
+
+        <EditText
+            android:id="@+id/editTextGroceryItem"
+            android:layout_width="290dp"
+            android:layout_height="wrap_content"
+            android:hint="New Item"
+            android:inputType="textAutoCorrect" />
+
+        <Button
+            android:id="@+id/addButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add" />
+    </LinearLayout>
+
+    <!--    <EditText-->
+    <!--        android:id="@+id/deleteTextGroceryItem"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="50dp"-->
+    <!--        android:hint="Item"-->
+    <!--        android:inputType="textAutoCorrect"/>-->
+    <!--    <Button-->
+    <!--        android:id="@+id/deleteButton"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:text="Delete" />-->
+
+    <!--    <EditText-->
+    <!--        android:id="@+id/TextOldGroceryItem"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="50dp"-->
+    <!--        android:hint="oldItemName"-->
+    <!--        android:inputType="textAutoCorrect"/>-->
+    <!--    <EditText-->
+    <!--        android:id="@+id/TextNewGroceryItem"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="50dp"-->
+    <!--        android:hint="newItemName"-->
+    <!--        android:inputType="textAutoCorrect"/>-->
+    <!--    <Button-->
+    <!--        android:id="@+id/updateButton"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:text="Update" />-->
+</androidx.constraintlayout.widget.ConstraintLayout>

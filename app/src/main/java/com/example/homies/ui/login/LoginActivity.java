@@ -1,5 +1,6 @@
 package com.example.homies.ui.login;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -17,11 +18,15 @@ import timber.log.Timber;
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
     FirebaseAuth mAuth;
     private final String TAG = getClass().getSimpleName();
+    private int state = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        FirebaseAuth.getInstance().signOut();
         super.onCreate(savedInstanceState);
+        FirebaseAuth.getInstance().signOut();
+        if (savedInstanceState != null){
+            state = savedInstanceState.getInt("LoginState", 0);
+        }
         Timber.tag(TAG).d("onCreate()");
         setContentView(R.layout.activity_login);
         mAuth = FirebaseAuth.getInstance();
@@ -31,6 +36,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         signInButton.setOnClickListener(this);
         signUpButton.setOnClickListener(this);
+
+        if (state == 1){
+            showSignInFragment();
+        } else if (state == 2){
+            showSignUpFragment();
+        }
     }
 
     @Override
@@ -48,8 +59,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
+        outState.putInt("LoginState", state);
+    }
+
     // Method to switch to SignUpFragment
     public void showSignUpFragment() {
+        state = 2;
         hideButtons();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, new SignUpFragment(this))
@@ -59,6 +77,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     // Method to switch to SignInFragment
     public void showSignInFragment() {
+        state = 1;
         hideButtons();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, new SignInFragment(this))
@@ -76,6 +95,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     // Method to show the buttons
     public void showButtons(View viewToRemove) {
+        state = 0;
         LinearLayout fragmentContainer = findViewById(R.id.fragment_container);
         fragmentContainer.removeView(viewToRemove);
         Button signInButton = findViewById(R.id.buttonSignIn);
