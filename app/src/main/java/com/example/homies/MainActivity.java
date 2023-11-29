@@ -3,11 +3,15 @@ package com.example.homies;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -30,11 +34,14 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -56,9 +63,13 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String PREFERENCES = "MyPreferences";
     private static final String SELECTED_HOUSEHOLD = "selectedHousehold";
+    private static final String PREF_THEME_KEY = "theme";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Apply theme before super.onCreate
+        applyTheme();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -237,6 +248,7 @@ public class MainActivity extends AppCompatActivity {
         NavigationView navigationView = findViewById(R.id.nav_view);
         View headerView = navigationView.getHeaderView(0);
         TextView textViewDisplayName = headerView.findViewById(R.id.textViewDisplayName);
+        SwitchCompat switchDarkMode = navigationView.findViewById(R.id.switch_dark_mode);
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
@@ -254,6 +266,13 @@ public class MainActivity extends AppCompatActivity {
         textViewDisplayName.setOnClickListener(v -> {
             // Show a dialog to prompt for a new display name
             showEditDisplayNameDialog();
+        });
+
+        // Initialize the switch for dark mode
+        switchDarkMode.setChecked(isDarkModeEnabled());
+        switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            updateTheme(isChecked);
+            Timber.tag(TAG).d("Switch checked: %s", isChecked);
         });
     }
 
@@ -288,6 +307,51 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    private void applyTheme() {
+        // Retrieve the current theme preference
+        boolean isDarkModeEnabled = isDarkModeEnabled();
+        int themeId = isDarkModeEnabled ? R.style.Theme_Homies_Dark : R.style.Theme_Homies_Light;
+
+        // Apply the theme
+        setTheme(themeId);
+
+        // Apply the global theme for the application
+        AppCompatDelegate.setDefaultNightMode(
+                isDarkModeEnabled ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
+        );
+    }
+
+    private boolean isDarkModeEnabled() {
+        // Retrieve the current theme preference
+        SharedPreferences preferences = getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
+        int themeId = preferences.getInt(PREF_THEME_KEY, R.style.Theme_Homies_Light);
+        return themeId == R.style.Theme_Homies_Dark;
+    }
+
+    private void updateTheme(boolean isDarkModeEnabled) {
+        // Determine the new theme
+        int newTheme = isDarkModeEnabled ? R.style.Theme_Homies_Dark : R.style.Theme_Homies_Light;
+
+        // Save the selected theme to preferences
+        setCurrentTheme(newTheme);
+
+        // Apply the new theme globally
+        AppCompatDelegate.setDefaultNightMode(
+                isDarkModeEnabled ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
+        );
+
+        // Recreate all activities
+        recreate();
+    }
+
+    private void setCurrentTheme(int themeId) {
+        // Save the selected theme to preferences
+        SharedPreferences preferences = getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt(PREF_THEME_KEY, themeId);
+        editor.apply();
     }
 
     public interface UserCallback {
