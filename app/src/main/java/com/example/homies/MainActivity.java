@@ -3,6 +3,7 @@ package com.example.homies;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 
@@ -17,6 +18,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.homies.model.Household;
 import com.example.homies.model.User;
+import com.example.homies.model.viewmodel.GroceryListViewModel;
 import com.example.homies.model.viewmodel.HouseholdViewModel;
 import com.example.homies.ui.calendar.CalendarFragment;
 import com.example.homies.ui.grocery_list.GroceryListFragment;
@@ -36,6 +38,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -64,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String PREFERENCES = "MyPreferences";
     private static final String SELECTED_HOUSEHOLD = "selectedHousehold";
     private static final String PREF_THEME_KEY = "theme";
+    private int state = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +76,19 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //checking if auto rotation is on
+        if (android.provider.Settings.System.getInt(getContentResolver(),
+                Settings.System.ACCELEROMETER_ROTATION, 0) == 1){
+            Toast.makeText(getApplicationContext(), "Auto Rotation is On", Toast.LENGTH_SHORT).show();
+
+        } else{
+            Toast.makeText(getApplicationContext(), "Auto Rotation is Off", Toast.LENGTH_LONG).show();
+        }
+
+        if (savedInstanceState != null){
+            state = savedInstanceState.getInt("MainState", 0);
+        }
 
         // Initialize views
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
@@ -125,20 +142,40 @@ public class MainActivity extends AppCompatActivity {
         handleNavdrawerClicks(householdViewModel);
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+
+        switch(state){
+            case 1:
+                replaceFragment(new GroceryListFragment());
+                break;
+            case 2:
+                replaceFragment(new LaundryFragment());
+                break;
+            case 3:
+                replaceFragment(new CalendarFragment());
+                break;
+            case 4:
+                replaceFragment(new LocationFragment());
+                break;
+        }
     }
 
     private void handleNavbarClicks() {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.navigation_messages) {
+                state = 0;
                 replaceFragment(new MessagesFragment());
             } else if (id == R.id.navigation_grocery_list) {
+                state = 1;
                 replaceFragment(new GroceryListFragment());
             } else if (id == R.id.navigation_laundry) {
+                state = 2;
                 replaceFragment(new LaundryFragment());
             } else if (id == R.id.navigation_calendar) {
+                state = 3;
                 replaceFragment(new CalendarFragment());
             } else if (id == R.id.navigation_location) {
+                state = 4;
                 replaceFragment(new LocationFragment());
             }
             return true;
@@ -177,6 +214,12 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
+        outState.putInt("MainState", state);
     }
 
     private void replaceFragment(Fragment fragment) {
