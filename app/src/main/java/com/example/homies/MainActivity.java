@@ -38,6 +38,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -75,6 +76,15 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //checking if auto rotation is on
+        if (android.provider.Settings.System.getInt(getContentResolver(),
+                Settings.System.ACCELEROMETER_ROTATION, 0) == 1){
+            Toast.makeText(getApplicationContext(), "Auto Rotation is On", Toast.LENGTH_SHORT).show();
+
+        } else{
+            Toast.makeText(getApplicationContext(), "Auto Rotation is Off", Toast.LENGTH_LONG).show();
+        }
 
         if (savedInstanceState != null){
             state = savedInstanceState.getInt("MainState", 0);
