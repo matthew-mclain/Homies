@@ -37,5 +37,7 @@
     <string name="user_icon">User Icon</string>
     <string name="mapbox_access_token">pk.eyJ1IjoiaGV5aHNpbmwiLCJhIjoiY2xvbjZqZjV3MmdmdTJycXQyd3Rtd3Y5dyJ9.rAewteRH9-Qp3PlHkXUOVA</string>
     <string name="show_location">Show Current Location</string>
+    <string name="dark_mode" />
+    <string name="dark_mode_icon" />
 
 </resources>

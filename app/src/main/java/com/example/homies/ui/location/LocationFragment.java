@@ -95,8 +95,10 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         View v = inflater.inflate(R.layout.fragment_location, container, false);
 
         mMapView = v.findViewById(R.id.mapView);
-        MapboxMap mMapboxMap = mMapView.getMapboxMap();
-        setupMap(mMapboxMap);
+        if (mMapView != null) {
+            MapboxMap mMapboxMap = mMapView.getMapboxMap();
+            setupMap(mMapboxMap);
+        }
 
         return v;
     }
