@@ -12,7 +12,6 @@
         android:layout_height="wrap_content"
         android:text="@string/homies"
         android:textSize="24sp"
-        android:textColor="@android:color/black"
         android:gravity="center"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="32dp"/>

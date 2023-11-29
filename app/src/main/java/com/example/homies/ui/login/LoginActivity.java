@@ -83,7 +83,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         state = 2;
         hideButtons();
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, new SignUpFragment(this))
+                .replace(R.id.fragment_container, new SignUpFragment())
                 .addToBackStack(null)
                 .commit();
     }
@@ -93,7 +93,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         state = 1;
         hideButtons();
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, new SignInFragment(this))
+                .replace(R.id.fragment_container, new SignInFragment())
                 .addToBackStack(null)
                 .commit();
     }

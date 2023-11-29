@@ -34,10 +34,8 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
     private final String TAG = getClass().getSimpleName();
 
 
-    public SignUpFragment(LoginActivity loginActivity) {
-        this.loginActivity = loginActivity;
+    public SignUpFragment() {
     }
-    public SignUpFragment(){};
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

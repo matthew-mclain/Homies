@@ -25,6 +25,7 @@ import com.example.homies.ui.grocery_list.GroceryListFragment;
 import com.example.homies.ui.household.HouseholdActivity;
 import com.example.homies.ui.laundry.LaundryFragment;
 import com.example.homies.ui.location.LocationFragment;
+import com.example.homies.ui.login.LoginActivity;
 import com.example.homies.ui.messages.MessagesFragment;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -197,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
                 drawerLayout.closeDrawer(GravityCompat.START);
             } else if (id == R.id.navigation_sign_out) { //Sign Out
                 FirebaseAuth.getInstance().signOut();
-                Intent intent = new Intent(MainActivity.this, SplashActivity.class);
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
@@ -378,18 +379,29 @@ public class MainActivity extends AppCompatActivity {
         int newTheme = isDarkModeEnabled ? R.style.Theme_Homies_Dark : R.style.Theme_Homies_Light;
 
         // Save the selected theme to preferences
-        setCurrentTheme(newTheme);
+        saveCurrentTheme(newTheme);
+
+        // Check Firebase authentication status before switching theme
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            Timber.tag(TAG).d("User is signed in. UID: %s", currentUser.getUid());
+        } else {
+            Timber.tag(TAG).d("User is signed out.");
+        }
 
         // Apply the new theme globally
         AppCompatDelegate.setDefaultNightMode(
                 isDarkModeEnabled ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
         );
 
-        // Recreate all activities
-        recreate();
+        // Recreate MainActivity to apply the new theme
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
-    private void setCurrentTheme(int themeId) {
+    private void saveCurrentTheme(int themeId) {
         // Save the selected theme to preferences
         SharedPreferences preferences = getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
