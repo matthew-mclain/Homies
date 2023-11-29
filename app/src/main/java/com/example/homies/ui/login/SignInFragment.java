@@ -38,7 +38,8 @@ public class SignInFragment extends Fragment implements View.OnClickListener{
     private static FirebaseFirestore db;
     private final String TAG = getClass().getSimpleName();
 
-    public SignInFragment() {
+    public SignInFragment(LoginActivity loginActivity) {
+        this.loginActivity = loginActivity;
     }
 
     @Override

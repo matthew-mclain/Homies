@@ -34,7 +34,8 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Di
     private final String TAG = getClass().getSimpleName();
 
 
-    public SignUpFragment() {
+    public SignUpFragment(LoginActivity loginActivity) {
+        this.loginActivity = loginActivity;
     }
 
     @Override
