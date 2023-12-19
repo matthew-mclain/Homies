@@ -1,5 +1,8 @@
 package com.example.homies.ui.calendar;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,37 +10,48 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.homies.R;
 import com.example.homies.model.CalendarEvent;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
 
 import timber.log.Timber;
 
 public class CalendarFragment extends Fragment implements View.OnClickListener {
-
     View view;
-
-    EditText eventTitleET, eventDetailET, eventStartTimeET, eventStartDateET, eventEndTimeET, eventEndDateET;
-
     private final String TAG = getClass().getSimpleName();
+    private static final String PREFERENCES = "MyPreferences";
+    private static final String PREF_THEME_KEY = "theme";
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         view = inflater.inflate(R.layout.fragment_calendar, container, false);
         Timber.tag(TAG).d("onCreateView()");
 
-        eventTitleET = view.findViewById(R.id.editTextEventTitle);
-        eventDetailET = view.findViewById(R.id.editTextEventDetail);
-        eventStartDateET = view.findViewById(R.id.editTextStartDate);
-        eventStartTimeET = view.findViewById(R.id.editTextStartTime);
-        eventEndDateET = view.findViewById(R.id.editTextEndDate);
-        eventEndTimeET = view.findViewById(R.id.editTextEndTime);
+        // Assuming you have a button to add events
+        FloatingActionButton actionButton = view.findViewById(R.id.fabAddEvent);
+        actionButton.setOnClickListener(this);
 
-        final Button addEventButton = view.findViewById(R.id.addEventButton);
-        if(addEventButton != null){
-            addEventButton.setOnClickListener(this);
-        }
+        // Retrieve the current theme preference
+        boolean isDarkModeEnabled = isDarkModeEnabled(requireContext());
+
+        // Choose the background tint color based on the theme
+        int backgroundColor = isDarkModeEnabled
+                ? ContextCompat.getColor(requireContext(), R.color.purple_200)
+                : ContextCompat.getColor(requireContext(), R.color.purple_500);
+
+        // Choose the icon color based on the theme
+        int iconColor = isDarkModeEnabled
+                ? ContextCompat.getColor(requireContext(), android.R.color.black)
+                : ContextCompat.getColor(requireContext(), android.R.color.white);
+
+        // Set the background tint dynamically
+        actionButton.setBackgroundTintList(ColorStateList.valueOf(backgroundColor));
+
+        // Set the icon color dynamically
+        actionButton.setImageTintList(ColorStateList.valueOf(iconColor));
 
         return view;
     }
@@ -46,12 +60,16 @@ public class CalendarFragment extends Fragment implements View.OnClickListener {
     public void onClick(View v) {
         Timber.tag(TAG).d("onClick()");
 
-        if(v.getId() == R.id.addEventButton){
-            Timber.tag(TAG).d("add Event");
-            String eventTitle = eventTitleET.getText().toString();
-            String eventDetail = eventDetailET.getText().toString();
-            CalendarEvent event = new CalendarEvent(eventTitle, eventDetail, null, null, "123");
-            event.createEvent("123", eventTitle, eventDetail, null, null);
+        if (v.getId() == R.id.fabAddEvent) {
+            AddEventDialogFragment addEventDialogFragment = new AddEventDialogFragment();
+            addEventDialogFragment.show(getFragmentManager(), "AddEventDialogFragment");
         }
+    }
+
+    private boolean isDarkModeEnabled(Context context) {
+        // Retrieve the current theme preference
+        SharedPreferences preferences = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
+        int themeId = preferences.getInt(PREF_THEME_KEY, R.style.Theme_Homies_Light);
+        return themeId == R.style.Theme_Homies_Dark;
     }
 }

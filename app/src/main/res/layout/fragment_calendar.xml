@@ -1,61 +1,29 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- res/layout/fragment_calendar.xml -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/editTextEventTitle"
+    <!-- RecyclerView to display events -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewEvents"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:ems="10"
-        android:hint="Event Title"
-        android:inputType="text" />
+        android:layout_height="match_parent"
+        android:layout_above="@+id/fabAddEvent"
+        android:padding="16dp"
+        android:clipToPadding="false" />
 
-    <EditText
-        android:id="@+id/editTextEventDetail"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:ems="10"
-        android:hint="Event Detail"
-        android:inputType="text" />
-
-    <EditText
-        android:id="@+id/editTextStartDate"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:ems="10"
-        android:hint="Start Date"
-        android:inputType="date" />
-
-    <EditText
-        android:id="@+id/editTextStartTime"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:ems="10"
-        android:hint="Start Time"
-        android:inputType="time" />
-
-    <EditText
-        android:id="@+id/editTextEndDate"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:ems="10"
-        android:hint="End Date"
-        android:inputType="date" />
-
-    <EditText
-        android:id="@+id/editTextEndTime"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:ems="10"
-        android:hint="End Time"
-        android:inputType="time" />
-
-    <Button
-        android:id="@+id/addEventButton"
-        android:layout_width="match_parent"
+    <!-- FloatingActionButton for adding events -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/fabAddEvent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add" />
-</LinearLayout>
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        android:src="@drawable/add_24"
+        android:contentDescription="@string/add_event"
+        app:backgroundTint="@color/purple_200"/>
+
+</RelativeLayout>

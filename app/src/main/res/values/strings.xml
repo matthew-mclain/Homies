@@ -39,5 +39,9 @@
     <string name="show_location">Show Current Location</string>
     <string name="dark_mode" />
     <string name="dark_mode_icon" />
+    <string name="add_event" />
+    <string name="event_name">Event name</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
 
 </resources>
