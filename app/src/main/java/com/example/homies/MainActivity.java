@@ -293,6 +293,8 @@ public class MainActivity extends AppCompatActivity {
         View headerView = navigationView.getHeaderView(0);
         TextView textViewDisplayName = headerView.findViewById(R.id.textViewDisplayName);
         SwitchCompat switchDarkMode = navigationView.findViewById(R.id.switch_dark_mode);
+        ImageView userIcon = headerView.findViewById(R.id.imageViewUserIcon);
+        ImageView darkModeIcon = navigationView.findViewById(R.id.imageViewDarkModeIcon);
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
@@ -306,6 +308,18 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        // Retrieve the current theme preference
+        boolean isDarkModeEnabled = isDarkModeEnabled();
+
+        // Set colors based on theme
+        int iconColor = isDarkModeEnabled
+                ? ContextCompat.getColor(this, android.R.color.white)
+                : ContextCompat.getColor(this, android.R.color.black);
+
+        // Set user icon and dark mode switch color
+        userIcon.setColorFilter(iconColor, PorterDuff.Mode.SRC_IN);
+        darkModeIcon.setColorFilter(iconColor, PorterDuff.Mode.SRC_IN);
+
         // Set OnClickListener to the textViewDisplayName
         textViewDisplayName.setOnClickListener(v -> {
             // Show a dialog to prompt for a new display name
@@ -313,7 +327,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Initialize the switch for dark mode
-        switchDarkMode.setChecked(isDarkModeEnabled());
+        switchDarkMode.setChecked(isDarkModeEnabled);
         switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
             updateTheme(isChecked);
             Timber.tag(TAG).d("Switch checked: %s", isChecked);

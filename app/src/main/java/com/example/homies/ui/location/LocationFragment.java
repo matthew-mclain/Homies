@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,6 +22,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -83,6 +86,8 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
     private String currentLongitude;
     private LocationManager locationManager;
     private boolean locationEnabled;
+    private static final String PREFERENCES = "MyPreferences";
+    private static final String PREF_THEME_KEY = "theme";
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private static final long UPDATE_INTERVAL = 1; // 1 minute
 
@@ -228,7 +233,6 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
             MapboxMap map = mMapView.getMapboxMap();
             map.removeOnStyleDataLoadedListener(this);
             mMapView = null;
-            //executorService.shutdown();
         } else {
             Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
         }
@@ -403,6 +407,22 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
                         // Set the text to the fetched display name
                         displayNameTextView.setText(displayName);
 
+                        // Retrieve the current theme preference
+                        boolean isDarkModeEnabled = isDarkModeEnabled(requireContext());
+
+                        // Choose the annotation color based on the theme
+                        int annotationColor = isDarkModeEnabled
+                                ? ContextCompat.getColor(requireContext(), R.color.purple_200)
+                                : ContextCompat.getColor(requireContext(), R.color.purple_500);
+
+                        // Choose the text color based on the theme
+                        int textColor = isDarkModeEnabled
+                                ? ContextCompat.getColor(requireContext(), android.R.color.black)
+                                : ContextCompat.getColor(requireContext(), android.R.color.white);
+
+                        displayNameTextView.setTextColor(textColor);
+                        annotationView.setBackgroundColor(annotationColor);
+
                         viewAnnotationManager.addViewAnnotation(annotationView, viewAnnotationOptions);
                     } else {
                         Timber.tag(TAG).d("Display Name is null for %s", location.getUserId());
@@ -412,5 +432,12 @@ public class LocationFragment extends Fragment implements PermissionsListener, O
         } else {
             Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private boolean isDarkModeEnabled(Context context) {
+        // Retrieve the current theme preference
+        SharedPreferences preferences = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
+        int themeId = preferences.getInt(PREF_THEME_KEY, R.style.Theme_Homies_Light);
+        return themeId == R.style.Theme_Homies_Dark;
     }
 }
