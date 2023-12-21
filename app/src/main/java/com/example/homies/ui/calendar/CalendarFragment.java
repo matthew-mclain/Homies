@@ -28,7 +28,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
 
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.ArrayList;
@@ -150,7 +149,11 @@ public class CalendarFragment extends Fragment implements View.OnClickListener, 
     public void onEventAdded(String eventName, Timestamp eventDateTime) {
         if (!eventName.isEmpty() && !eventNameExists(eventName)) {
             // Add the new event to the list
-            calendarViewModel.addCalendarEvent(eventName, eventDateTime);
+            if (MyApplication.hasNetworkConnection(requireContext())) {
+                calendarViewModel.addCalendarEvent(eventName, eventDateTime);
+            } else {
+                Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
+            }
         } else {
             // Show a toast message based on the validation result
             if (eventName.isEmpty()) {
@@ -183,7 +186,11 @@ public class CalendarFragment extends Fragment implements View.OnClickListener, 
             adapter.notifyItemChanged(updatedPosition);
 
             // Update the event in Firebase
-            calendarViewModel.updateCalendarEvent(oldEventName, newEventName, newDateTime);
+            if (MyApplication.hasNetworkConnection(requireContext())) {
+                calendarViewModel.updateCalendarEvent(oldEventName, newEventName, newDateTime);
+            } else {
+                Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
+            }
         } else {
             // Show a toast message based on the validation result
             if (newEventName.isEmpty()) {
@@ -265,7 +272,11 @@ public class CalendarFragment extends Fragment implements View.OnClickListener, 
                     notifyItemRemoved(adapterPosition);
 
                     // Delete the event from Firebase
-                    calendarViewModel.deleteCalendarEvent(event.getEventName());
+                    if (MyApplication.hasNetworkConnection(requireContext())) {
+                        calendarViewModel.deleteCalendarEvent(event.getEventName());
+                    } else {
+                        Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
         }

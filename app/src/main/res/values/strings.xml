@@ -48,5 +48,7 @@
     <string name="delete">Delete</string>
     <string name="edit">Edit</string>
     <string name="edit_event" />
+    <string name="new_item">New Item</string>
+    <string name="groceries_list">Groceries List</string>
 
 </resources>

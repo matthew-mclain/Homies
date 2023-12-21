@@ -8,7 +8,7 @@
         android:id="@+id/recyclerViewGrocery"
         android:layout_width="368dp"
         android:layout_height="543dp"
-        android:text="Groceries List" />
+        android:text="@string/groceries_list" />
 
     <LinearLayout
         android:id="@+id/layoutMessageInput"
@@ -22,43 +22,13 @@
         android:id="@+id/editTextGroceryItem"
         android:layout_width="290dp"
         android:layout_height="wrap_content"
-        android:hint="New Item"
+        android:hint="@string/new_item"
         android:inputType="textAutoCorrect"/>
 
     <Button
         android:id="@+id/addButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add" />
+        android:text="@string/add" />
     </LinearLayout>
-
-<!--    <EditText-->
-<!--        android:id="@+id/deleteTextGroceryItem"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="50dp"-->
-<!--        android:hint="Item"-->
-<!--        android:inputType="textAutoCorrect"/>-->
-<!--    <Button-->
-<!--        android:id="@+id/deleteButton"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="Delete" />-->
-
-<!--    <EditText-->
-<!--        android:id="@+id/TextOldGroceryItem"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="50dp"-->
-<!--        android:hint="oldItemName"-->
-<!--        android:inputType="textAutoCorrect"/>-->
-<!--    <EditText-->
-<!--        android:id="@+id/TextNewGroceryItem"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="50dp"-->
-<!--        android:hint="newItemName"-->
-<!--        android:inputType="textAutoCorrect"/>-->
-<!--    <Button-->
-<!--        android:id="@+id/updateButton"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="Update" />-->
 </RelativeLayout>
