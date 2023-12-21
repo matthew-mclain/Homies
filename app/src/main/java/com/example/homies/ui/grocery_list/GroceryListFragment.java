@@ -30,11 +30,10 @@ import java.util.List;
 import timber.log.Timber;
 
 public class GroceryListFragment extends Fragment implements View.OnClickListener {
-    private final String TAG = getClass().getSimpleName();
-    EditText itemET, itemDeleteET, itemOldET, itemNewET;
+    private final String TAG = GroceryListFragment.class.getSimpleName();
+    EditText itemET;
     RecyclerView recyclerViewGrocery;
     ArrayList<String> groceryItemsArrayList = new ArrayList<>();
-    private static FirebaseFirestore db;
     GroceryAdapter adapter;
     View view;
     private HouseholdViewModel householdViewModel;
@@ -46,24 +45,11 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
         Timber.tag(TAG).d("onCreateView()");
 
         itemET = view.findViewById(R.id.editTextGroceryItem);
-//        itemDeleteET = view.findViewById(R.id.deleteTextGroceryItem);
-//        itemOldET = view.findViewById(R.id.TextOldGroceryItem);
-//        itemNewET = view.findViewById(R.id.TextNewGroceryItem);
 
         final Button addItemButton = view.findViewById(R.id.addButton);
         if (addItemButton != null) {
             addItemButton.setOnClickListener(this);
         }
-
-
-//        final Button deleteItemButton = view.findViewById(R.id.deleteButton);
-//        if (deleteItemButton != null) {
-//            deleteItemButton.setOnClickListener(this);
-//        }
-//        final Button updateItemButton = view.findViewById(R.id.updateButton);
-//        if (updateItemButton != null) {
-//            updateItemButton.setOnClickListener(this);
-//        }
 
         recyclerViewGrocery = view.findViewById(R.id.recyclerViewGrocery);
 
@@ -79,7 +65,6 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Timber.tag(TAG).d("onViewCreated()");
-
 
         //Initialize ViewModel instances
         householdViewModel = new ViewModelProvider(requireActivity()).get(HouseholdViewModel.class);
@@ -101,7 +86,7 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
             //Observe the grocery items LiveData
             groceryListViewModel.getSelectedItems().observe(getViewLifecycleOwner(), items -> {
                 if (items != null && !items.isEmpty()) {
-                    Timber.tag(TAG).d("Grocery items: " + items.size());
+                    Timber.tag(TAG).d("Grocery items: %s", items.size());
                     groceryItemsArrayList.clear();
                     for (GroceryItem item : items) {
                         groceryItemsArrayList.add(item.getItemName());
@@ -130,36 +115,12 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
         } else {
             Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
         }
-//        if (view.getId() == R.id.deleteButton) {
-//            Timber.tag(TAG).d("delete");
-//            String itemName = String.valueOf(itemDeleteET.getText());
-//            groceryListViewModel.deleteGroceryItem(itemName);
-//            groceryItemsArrayList.remove(itemName);
-//            adapter.notifyDataSetChanged();
-//            itemDeleteET.getText().clear();
-//        }
-
-//        if (view.getId() == R.id.updateButton) {
-//            Timber.tag(TAG).d("update");
-//            String oldItem = String.valueOf(itemOldET.getText());
-//            String newItem = String.valueOf(itemNewET.getText());
-//            groceryListViewModel.updateGroceryItem(oldItem, newItem);
-//            int index = groceryItemsArrayList.indexOf(oldItem);
-//            groceryItemsArrayList.set(index, newItem);
-//            adapter.notifyDataSetChanged();
-//            itemOldET.getText().clear();
-//            itemNewET.getText().clear();
-//        }
-
     }
 
     @Override
     public void onResume() {
         super.onResume();
         itemET.getText().clear();
-//        itemDeleteET.getText().clear();
-//        itemOldET.getText().clear();
-//        itemNewET.getText().clear();
     }
 
     private class GroceryAdapter extends RecyclerView.Adapter<GroceryAdapter.GroceryViewHolder> {
@@ -200,12 +161,7 @@ public class GroceryListFragment extends Fragment implements View.OnClickListene
                             String itemName = groceryItemsArrayList.get(getAdapterPosition());
                             groceryListViewModel.deleteGroceryItem(itemName);
                             groceryItemsArrayList.remove(getAdapterPosition());
-                            recyclerViewGrocery.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    adapter.notifyDataSetChanged();
-                                }
-                            });
+                            recyclerViewGrocery.post(() -> adapter.notifyDataSetChanged());
                         } else {
                             Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show();
                         }

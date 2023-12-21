@@ -126,7 +126,4 @@ public class GroceryListViewModel extends ViewModel {
             Timber.tag(TAG).d("No grocery list selected.");
         }
     }
-
-
-
 }

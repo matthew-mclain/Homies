@@ -36,7 +36,6 @@ public class GroceryList {
 
     public static void createGroceryList(String householdId) {
         GroceryList groceryList = new GroceryList(householdId);
-
         db = MyApplication.getDbInstance();
         db.collection("grocery_lists")
                 .add(groceryList)
@@ -90,7 +89,6 @@ public class GroceryList {
     public void deleteGroceryItem(String itemName) {
         if (householdId != null) {
             db = MyApplication.getDbInstance();
-
             db.collection("grocery_lists")
                     .whereEqualTo("householdId", householdId)
                     .get()
@@ -123,7 +121,6 @@ public class GroceryList {
     public void updateGroceryItem(String oldName, String newName) {
         if (householdId != null) {
             db = MyApplication.getDbInstance();
-
             db.collection("grocery_lists")
                     .whereEqualTo("householdId", householdId)
                     .get()

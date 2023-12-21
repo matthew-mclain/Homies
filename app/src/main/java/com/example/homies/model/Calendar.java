@@ -1,9 +1,9 @@
 package com.example.homies.model;
 
 import com.example.homies.MyApplication;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.UUID;
 
 import timber.log.Timber;
 
@@ -27,10 +27,8 @@ public class Calendar {
         this.householdId = householdId;
     }
 
-
     public static void createCalendar(String householdId) {
         Calendar calendar = new Calendar(householdId);
-
         db = MyApplication.getDbInstance();
         db.collection("calendars")
                 .add(calendar)

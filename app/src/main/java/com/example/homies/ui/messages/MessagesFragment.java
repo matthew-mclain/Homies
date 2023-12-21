@@ -1,7 +1,6 @@
 package com.example.homies.ui.messages;
 
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,8 +18,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.homies.MyApplication;
 import com.example.homies.R;
-import com.example.homies.model.GroceryItem;
-import com.example.homies.model.GroupChat;
 import com.example.homies.model.Message;
 import com.example.homies.model.viewmodel.GroupChatViewModel;
 import com.example.homies.model.viewmodel.HouseholdViewModel;

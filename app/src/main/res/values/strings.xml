@@ -43,5 +43,10 @@
     <string name="event_name">Event name</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
+    <string name="date">Date</string>
+    <string name="time">Time</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="edit_event" />
 
 </resources>

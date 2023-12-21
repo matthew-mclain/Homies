@@ -18,13 +18,12 @@ import timber.log.Timber;
 
 public class GroupChatViewModel extends ViewModel {
     private MutableLiveData<GroupChat> selectedGroupChat = new MutableLiveData<>();
-    private MutableLiveData<List<Message>> selectedMessages = new MutableLiveData<>();
-    private static FirebaseFirestore db;
-    private static final String TAG = GroupChatViewModel.class.getSimpleName();
 
-    public LiveData<GroupChat> getSelectedGroupChat() {
-        return selectedGroupChat;
-    }
+    private MutableLiveData<List<Message>> selectedMessages = new MutableLiveData<>();
+
+    private static FirebaseFirestore db;
+
+    private static final String TAG = GroupChatViewModel.class.getSimpleName();
 
     public LiveData<List<Message>> getSelectedMessages() {
         return selectedMessages;
