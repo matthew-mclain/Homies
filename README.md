@@ -17,3 +17,16 @@ Homies is a comprehensive household management app designed to simplify and enha
 
 ### 5. Location Manager  
    Enhance safety and convenience by keeping track of each other's locations. The Location Manager allows roommates to share their locations within the app, providing peace of mind and facilitating coordination.
+
+
+## Usage:
+
+### What You Need:
+   - Android Studio<br>
+   - An Android device, or an Android Emulator set up in Android Studio
+
+### Installation:
+   - Clone this repository: <code>git clone https://github.com/matthew-mclain/Homies</code>
+   - Open the project in Android Studio<br>
+   - Connect your Android device to your computer or launch the Android Emulator in Android Studio
+   - Build and run the app in Android Studio
